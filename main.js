@@ -35,8 +35,8 @@ if ('serviceWorker' in navigator) {
 const DB_NAME = 'SriRamaKotiDB';
 const STORE_NAME = 'sriRamaStore';
 const DB_VERSION = 1;
-const TOTAL_ENTRIES = 10000000; // Change to 10000000 for 1 crore 
-const BATCH_SIZE = 100000; // Adjust batch size for performance
+const TOTAL_ENTRIES = 10000000; // 1 crore
+const BATCH_SIZE = 100000;
 const PAGE_SIZE = 5000;
 
 let db;
@@ -44,6 +44,7 @@ let worker;
 let currentPage = 0;
 let totalPages = 0;
 
+// Elements
 const startBtn = document.getElementById('startBtn');
 const deleteDbBtn = document.getElementById('deleteDbBtn');
 const statusP = document.getElementById('status');
@@ -54,6 +55,16 @@ const prevPageBtn = document.getElementById('prevPageBtn');
 const nextPageBtn = document.getElementById('nextPageBtn');
 const lastPageBtn = document.getElementById('lastPageBtn');
 const pageInfo = document.getElementById('pageInfo');
+const goTopBtn = document.getElementById('goTopBtn');
+
+// Menu elements
+const menuAbout = document.getElementById('menuAbout');
+const menuInsert = document.getElementById('menuInsert');
+const menuTools = document.getElementById('menuTools');
+
+const aboutPage = document.getElementById('aboutPage');
+const insertPage = document.getElementById('insertPage');
+const toolsPage = document.getElementById('toolsPage');
 
 function openDB() {
   return new Promise((resolve, reject) => {
@@ -188,24 +199,16 @@ function startInsertion() {
   };
 }
 
-// Improved delete database function with better confirmation
 async function deleteDatabase() {
-  // First confirmation
   const firstConfirm = confirm(`⚠️ WARNING: Delete Database?\n\nThis will permanently delete "${DB_NAME}" with all entries.\n\nAre you sure you want to continue?`);
-  
   if (!firstConfirm) return;
-  
-  // Second confirmation with typing requirement
+
   const confirmText = prompt(`⚠️ FINAL CONFIRMATION\n\nTo confirm deletion, type: DELETE\n\n(This action cannot be undone)`);
-  
   if (confirmText !== 'DELETE') {
-    if (confirmText !== null) { // User didn't cancel
-      alert('❌ Deletion cancelled - Text did not match "DELETE"');
-    }
+    if (confirmText !== null) alert('❌ Deletion cancelled - Text did not match "DELETE"');
     return;
   }
 
-  // Show progress
   updateStatus('Deleting database...');
   log('🗑️ Initiating database deletion...');
 
@@ -219,16 +222,15 @@ async function deleteDatabase() {
   request.onsuccess = () => {
     log('✅ Database deleted successfully');
     alert(`✅ Success!\n\nDatabase "${DB_NAME}" has been permanently deleted.`);
-    
-    // Reset UI
+
     logDiv.textContent = '';
     container.innerHTML = '';
     currentPage = 0;
     totalPages = 0;
-    
+
     updateStatus('Database deleted. Ready for fresh start.');
     updatePaginationButtons();
-    
+
     startBtn.disabled = false;
     deleteDbBtn.disabled = true;
   };
@@ -258,7 +260,42 @@ startBtn.onclick = async () => {
 
 deleteDbBtn.onclick = deleteDatabase;
 
+// Menu navigation
+menuAbout.onclick = () => {
+  aboutPage.style.display = 'block';
+  insertPage.style.display = 'none';
+  toolsPage.style.display = 'none';
+  menuAbout.disabled = true;
+  menuInsert.disabled = false;
+  menuTools.disabled = false;
+};
+
+menuInsert.onclick = () => {
+  aboutPage.style.display = 'none';
+  insertPage.style.display = 'block';
+  toolsPage.style.display = 'none';
+  menuAbout.disabled = false;
+  menuInsert.disabled = true;
+  menuTools.disabled = false;
+};
+
+menuTools.onclick = () => {
+  aboutPage.style.display = 'none';
+  insertPage.style.display = 'none';
+  toolsPage.style.display = 'block';
+  menuAbout.disabled = false;
+  menuInsert.disabled = false;
+  menuTools.disabled = true;
+};
+
 window.onload = async () => {
+  menuAbout.disabled = true;
+  menuInsert.disabled = false;
+  menuTools.disabled = false;
+  aboutPage.style.display = 'block';
+  insertPage.style.display = 'none';
+  toolsPage.style.display = 'none';
+
   try {
     await openDB();
     const countReq = db.transaction(STORE_NAME, 'readonly').objectStore(STORE_NAME).count();
@@ -287,10 +324,16 @@ window.onload = async () => {
   }
 };
 
-// Go to Top Button functionality
-const goTopBtn = document.getElementById('goTopBtn');
+// Go to Top Button accessibility
+const liveRegion = document.createElement('div');
+liveRegion.setAttribute('aria-live', 'polite');
+liveRegion.style.position = 'absolute';
+liveRegion.style.left = '-9999px';
+liveRegion.style.height = '1px';
+liveRegion.style.width = '1px';
+liveRegion.style.overflow = 'hidden';
+document.body.appendChild(liveRegion);
 
-// Show button only when scrolled down 300px or more
 window.addEventListener('scroll', () => {
   if (window.pageYOffset > 300) {
     goTopBtn.style.display = 'block';
@@ -299,8 +342,7 @@ window.addEventListener('scroll', () => {
   }
 });
 
-// Smooth scroll back to top on click
 goTopBtn.addEventListener('click', () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  liveRegion.textContent = 'Scrolled to top';
 });
-// Accessibility improvements

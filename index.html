@@ -1,47 +1,102 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Sri Rama Koti</title>
-<link rel="manifest" href="manifest.json" />
-<link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sri Rama Koti</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="icon-192.png" type="image/x-icon" />
 </head>
 <body>
 
-<div id="installBanner" style="display:none;" role="dialog" aria-live="polite" aria-atomic="true" aria-label="Install application prompt">
-  <span>Install Sri Rama Koti app for offline use?</span>
-  <button id="installBtn">Install</button>
-  <button id="dismissInstallBtn" class="dismissBtn" aria-label="Dismiss install prompt">✕</button>
-</div>
+  <div id="installBanner" style="display:none;" role="dialog" aria-live="polite" aria-atomic="true" aria-label="Install application prompt">
+    <span>Install Sri Rama Koti app for offline use</span>
+    <button id="installBtn">Install</button>
+    <button id="dismissInstallBtn" class="dismissBtn" aria-label="Dismiss install prompt">✕</button>
+  </div>
 
-<h1>🕉 Sri Rama Koti Offline IndexedDB Insert & Paginated View</h1>
+  <h1>🕉 Sri Rama Koti</h1>
 
-<div id="buttonsBar">
-  <button id="startBtn" title="Insert 1 crore entries in batches">Start Insert 1 Crore</button>
-  <button id="deleteDbBtn" title="Delete IndexedDB database" style="background:#d9534f;">Delete Database</button>
-</div>
+  <nav id="menuBar" aria-label="Main menu" style="text-align:center;">
+    <button id="menuAbout" disabled>About Rama</button>
 
-<p id="status" aria-live="polite" aria-atomic="true">Status: Ready</p>
+    <button id="menuInsert">Write RamaKoti </button>
+    <button id="menuTools">Tools Used</button>
+  </nav>
 
-<div id="logDiv" aria-live="polite" aria-label="Insertion Logs"></div>
+<section id="aboutPage" role="region" aria-live="polite" aria-atomic="true">
+  <h2>About Sri Rama</h2>
+  <p>రామాయ రామభద్రాయ రామచంద్రాయ వేధసే .రఘునాథాయ నాథాయ సితాయః పతయే నమః</p>
+  <p>Lord Sri Rama is the seventh avatar of Vishnu, known for his righteousness and virtue.</p>
+  <h3>Spiritual Significance</h3>
+  <p>The epic Ramayana narrates his life, emphasizing dharma, devotion, and moral excellence. Rama's virtue inspires millions of devotees worldwide.</p>
+  
+  <div style="margin-top:20px; padding-top:10px; border-top:1px solid #ccc;">
+    <h3>What is Rama Koti?</h3>
+    <p>Rama Koti is the devotional practice of chanting or writing the name of Lord Sri Rama one crore (10 million) times. This sacred act promotes concentration, inner peace, and connection to divine blessings.</p>
+    <p>Traditionally, it is done by hand, but now also embraced digitally, making this powerful spiritual exercise accessible anytime and anywhere.</p>
+    <p style="font-style:italic; color:#555;">"Repetition of Rama's name is believed to open the door to divine grace and eternal bliss."</p>
+<p>
+  "To perform Rama Koti, simply click the 'Insert 1 Crore Rama Koti' button and 1 crore Ramakoti entries will be digitally inserted and stored on your mobile device."
+</p>
+  </div>
+</section>
 
-<div id="paginationBar">
-  <button id="firstPageBtn" disabled aria-label="First Page">« First</button>
-  <button id="prevPageBtn" disabled aria-label="Previous Page">‹ Prev</button>
-  <span id="pageInfo">Page 0 / 0</span>
-  <button id="nextPageBtn" disabled aria-label="Next Page">Next ›</button>
-  <button id="lastPageBtn" disabled aria-label="Last Page">Last »</button>
-</div>
 
-<div id="dataContainer" aria-live="polite" aria-label="Entries"></div>
 
-<button id="goTopBtn" aria-label="Go to top of page">↑ Top</button>
 
-<footer id="copyright">
-  <p>&copy; 2025 Sandeep Miriyala - Developed with the help of AI tools</p>
-</footer>
+  <!-- Insert Page -->
+  <section id="insertPage" style="display:none;" role="region" aria-live="polite" aria-atomic="true">
+    <h2>
+      RAMA KOTI - Write 1 Crore Times
+    </h2>
+    <P>
+      Writing Rama Koti means writing the name of Lord Rama one crore (10 million) times. It is a powerful spiritual practice that brings peace, focus, and positive energy. Traditionally done by hand, you can now write Rama Koti digitally, making it faster and easier while preserving the same blessings. Simply start the process and let your device help you complete this sacred journey.
+    </P>
+    <P>
+      రామ కోటి రాయడం అంటే రాముడి నామాన్ని కోటి (10 మిలియన్) సార్లు రాయడం. ఇది శాంతి, దృష్టి మరియు సానుకూల శక్తిని తెచ్చే శక్తివంతమైన ఆధ్యాత్మిక సాధన. సాంప్రదాయకంగా చేతితో చేసే మీరు ఇప్పుడు రామ కోటిని డిజిటల్‌గా వ్రాయవచ్చు, అదే ఆశీర్వాదాలను కాపాడుకుంటూ దీన్ని వేగంగా మరియు సులభంగా చేయవచ్చు. ప్రక్రియను ప్రారంభించండి మరియు ఈ పవిత్ర ప్రయాణాన్ని పూర్తి చేయడంలో మీ పరికరం మీకు సహాయం చేయనివ్వండి.
+    </P>
+    <div id="buttonsBar">
+      <button id="startBtn" title="Insert 1 crore entries in batches">Start Insert 1 Crore</button>
+      <button id="deleteDbBtn" title="Delete IndexedDB database" style="background:#d9534f;">Delete Database</button>
+    </div>
 
-<script src="main.js"></script>
+    <p id="status" aria-live="polite" aria-atomic="true" style="margin-top:10px;">Status: Ready</p>
+
+    <div id="logDiv" aria-live="polite" aria-label="Insertion Logs"></div>
+
+    <div id="paginationBar" style="margin-top:20px;">
+      <button id="firstPageBtn" disabled aria-label="First Page">« First</button>
+      <button id="prevPageBtn" disabled aria-label="Previous Page">‹ Prev</button>
+      <span id="pageInfo">Page 0 / 0</span>
+      <button id="nextPageBtn" disabled aria-label="Next Page">Next ›</button>
+      <button id="lastPageBtn" disabled aria-label="Last Page">Last »</button>
+    </div>
+
+    <div id="dataContainer" aria-live="polite" aria-label="Entries" style="margin-top:20px;"></div>
+  </section>
+
+  <!-- Tools Used Page -->
+  <section id="toolsPage" role="region" aria-live="polite" aria-atomic="true" style="display:none;">
+    <h2>Tools Used</h2>
+      <p>రామాయ రామభద్రాయ రామచంద్రాయ వేధసే .రఘునాథాయ నాథాయ సితాయః పతయే నమః</p>  
+    <ul>
+      <li>IndexedDB for offline local storage</li>
+      <li>Web Workers for smooth background processing</li>
+      <li>Service Worker enabling Progressive Web App capabilities</li>
+      <li>Modern web technologies: HTML5, CSS3, and JavaScript ES6+</li>
+      <li>AI-assisted tools for development efficiency</li>
+    </ul>
+  </section>
+
+  <button id="goTopBtn" aria-label="Scroll to top of page" role="button" tabindex="0" style="display:none; position: fixed; top: 50%; right: 30px; transform: translateY(-50%); padding: 14px 20px; font-size: 24px; font-weight: 700; background-color: #1769aa; color: white; border: none; border-radius: 50px; cursor: pointer; box-shadow: 0 6px 18px rgba(23,105,170,0.7); z-index: 9999; user-select: none; transition: background-color 0.3s ease;">↑</button>
+
+  <footer style="text-align:center; margin-top:40px; padding:20px; border-top:1px solid #ddd; font-size:14px; color:#666;">
+    <p>© 2025 Sandeep Miriyala - Developed with the help of AI tools</p>
+  </footer>
+
+  <script src="main.js"></script>
+
 </body>
 </html>

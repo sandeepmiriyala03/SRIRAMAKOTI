@@ -219,7 +219,7 @@ button:disabled {
 }
 
 /* Copyright footer */
-#copyright {
+#footer {
   text-align: center;
   margin-top: 40px;
   padding: 20px;
@@ -229,19 +229,48 @@ button:disabled {
   background-color: var(--background-color);
 }
 
-#copyright p {
+#footer p {
   margin: 0;
   font-weight: 500;
 }
-
-@media (max-width: 600px) {
-  body {
-    margin: 40px 10px;
-    padding: 15px;
-  }
-  #buttonsBar button, #paginationBar button {
-    width: 100%;
-    max-width: none;
-    margin: 6px 0;
-  }
-}
+#menuBar button {
+      margin: 0 10px 20px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: none;
+      background-color: #1769aa;
+      color: white;
+      transition: background-color 0.3s ease;
+    }
+    #menuBar button:disabled {
+      background-color: #0f4f85;
+      cursor: default;
+      opacity: 0.7;
+    }
+    #aboutPage, #insertPage, #toolsPage {
+      max-width: 900px;
+      background-color: #f1f8ff;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px auto;
+      font-family: Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+      color: #333;
+    }
+    #aboutPage, #toolsPage, #insertPage {
+      display: none;
+    }
+    #aboutPage h2, #aboutPage h3, #toolsPage h2 ,#insertPage h2 {
+      color: #1769aa;
+    }
+    #aboutPage ul, #toolsPage ul  {
+      list-style: disc;
+      margin-left: 20px;
+    }
+    #goTopBtn:focus {
+      outline: 3px solid #ffbf47;
+      outline-offset: 2px;
+    }
