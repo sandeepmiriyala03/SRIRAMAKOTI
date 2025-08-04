@@ -1,0 +1,247 @@
+:root {
+  --primary-color: #1769aa;
+  --primary-hover: #0f4f85;
+  --background-color: #f9f9f9;
+  --card-bg: #fff;
+  --log-bg: #eee;
+  --text-color: #333;
+  --border-radius: 8px;
+  --box-shadow: 0 0 15px rgba(0,0,0,0.1);
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 20px;
+  background: var(--background-color);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  color: var(--text-color);
+  min-height: 100vh;
+  user-select: text;
+}
+
+h1 {
+  text-align: center;
+  color: var(--primary-color);
+  user-select: none;
+}
+
+#buttonsBar {
+  text-align: center;
+  margin: 20px 0;
+}
+
+button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  margin: 5px 7px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(23,105,170,0.4);
+  transition: background-color 0.3s ease;
+  min-width: 110px;
+}
+
+button:hover:not(:disabled) {
+  background-color: var(--primary-hover);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+#status {
+  font-weight: 600;
+  text-align: center;
+  margin-top: 10px;
+  min-height: 40px;
+}
+
+#logDiv {
+  background: var(--log-bg);
+  padding: 10px;
+  height: 140px;
+  overflow-y: auto;
+  font-family: monospace;
+  font-size: 13px;
+  border-radius: 6px;
+  margin-top: 15px;
+  white-space: pre-line;
+  border: 1px solid #ccc;
+}
+
+#dataContainer {
+  margin-top: 20px;
+  padding: 15px;
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+}
+
+.ramadiv {
+  background: #d4e3fa;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin: 5px 5px 5px 0;
+  border: 1px solid #a2c4e7;
+  font-size: 15px;
+  color: #174a8a;
+  display: inline-block;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  transition: background-color 0.3s ease;
+  cursor: default;
+}
+
+.ramadiv:hover {
+  background-color: #b3cafc;
+  border-color: #1061e0;
+}
+
+#paginationBar {
+  margin: 20px 0;
+  text-align: center;
+}
+
+#paginationBar button {
+  min-width: 80px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-weight: 600;
+  font-size: 14px;
+  margin: 3px 6px;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(23,105,170,0.4);
+  transition: background-color 0.3s ease;
+}
+
+#paginationBar button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+#paginationBar button:hover:not(:disabled) {
+  background-color: var(--primary-hover);
+}
+
+#pageInfo {
+  font-weight: 600;
+  user-select: none;
+  margin: 0 15px;
+}
+
+/* Install prompt banner top-right */
+#installBanner {
+  position: fixed;
+  top: 15px;
+  right: 15px;
+  background: var(--primary-color);
+  color: white;
+  padding: 10px 18px;
+  border-radius: 30px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  max-width: 280px;
+  user-select: none;
+  z-index: 10000;
+}
+
+#installBanner span {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#installBanner button {
+  background: white;
+  color: var(--primary-color);
+  border: none;
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-weight: 700;
+  cursor: pointer;
+  min-width: auto;
+  transition: background-color 0.3s ease;
+}
+
+#installBanner button:hover {
+  background-color: #ddd;
+}
+
+#installBanner button.dismissBtn {
+  background: #d9534f;
+  color: white;
+}
+
+#installBanner button.dismissBtn:hover {
+  background-color: #b03a3a;
+}
+
+/* Go to Top Button - positioned at middle right */
+#goTopBtn {
+  display: none; 
+  position: fixed; 
+  top: 50%; 
+  right: 30px;
+  transform: translateY(-50%);
+  padding: 14px 20px; 
+  font-size: 24px; 
+  font-weight: 700; 
+  background-color: #1769aa; 
+  color: white; 
+  border: none; 
+  border-radius: 50px; 
+  cursor: pointer; 
+  box-shadow: 0 6px 18px rgba(23,105,170,0.7); 
+  z-index: 9999; 
+  user-select: none;
+  transition: background-color 0.3s ease;
+}
+
+#goTopBtn:hover {
+  background-color: #0f4f85;
+}
+
+/* Copyright footer */
+#copyright {
+  text-align: center;
+  margin-top: 40px;
+  padding: 20px;
+  border-top: 1px solid #ddd;
+  font-size: 14px;
+  color: #666;
+  background-color: var(--background-color);
+}
+
+#copyright p {
+  margin: 0;
+  font-weight: 500;
+}
+
+@media (max-width: 600px) {
+  body {
+    margin: 40px 10px;
+    padding: 15px;
+  }
+  #buttonsBar button, #paginationBar button {
+    width: 100%;
+    max-width: none;
+    margin: 6px 0;
+  }
+}
