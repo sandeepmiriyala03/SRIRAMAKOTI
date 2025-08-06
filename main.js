@@ -44,6 +44,7 @@ const toolsPage = document.getElementById('toolsPage');
 
 // ===== Utility Functions =====
 
+// Open or create IndexedDB database and object store
 function openDB() {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
@@ -61,7 +62,7 @@ function openDB() {
   });
 }
 
-// Updated log function for fade-in new lines
+// Log messages with fade-in effect per entry
 function log(text) {
   const div = document.createElement('div');
   div.textContent = text;
@@ -73,6 +74,7 @@ function log(text) {
   logDiv.scrollTop = logDiv.scrollHeight;
 }
 
+// Update status text with optional spinner
 function updateStatus(text, showSpinner = false) {
   if (showSpinner) {
     statusP.innerHTML = `${text} <span class="ellipsis" aria-hidden="true"></span>`;
@@ -81,12 +83,14 @@ function updateStatus(text, showSpinner = false) {
   }
 }
 
+// Format numbers in Indian notation for thousands, lakhs, crores
 function formatIndianNumber(num) {
   if (num < 100000) return num.toLocaleString();
   if (num < 10000000) return (num / 100000).toFixed(0) + ' Lakh';
   return (num / 10000000).toFixed(1) + ' Crore';
 }
 
+// Format duration in human-readable h/m/s
 function formatDuration(ms) {
   const totalSeconds = Math.floor(ms / 1000);
   const hours = Math.floor(totalSeconds / 3600);
@@ -99,6 +103,7 @@ function formatDuration(ms) {
   return (hDisplay + mDisplay + sDisplay).trim() || '0 seconds';
 }
 
+// Enable/disable pagination buttons and update page info text
 function updatePaginationButtons() {
   firstPageBtn.disabled = currentPage === 0;
   prevPageBtn.disabled = currentPage === 0;
@@ -107,6 +112,7 @@ function updatePaginationButtons() {
   pageInfo.textContent = totalPages > 0 ? `Page ${currentPage + 1} / ${totalPages}` : 'Page 0 / 0';
 }
 
+// Load and display a page of records from IndexedDB based on currentPage
 function loadPage(page) {
   container.innerHTML = '';
   const startId = page * PAGE_SIZE + 1;
@@ -148,7 +154,7 @@ function loadPage(page) {
   };
 }
 
-// Pagination handlers
+// Pagination Button Handlers
 firstPageBtn.onclick = () => {
   if (currentPage !== 0) {
     currentPage = 0;
@@ -178,6 +184,7 @@ lastPageBtn.onclick = () => {
   }
 };
 
+// Change Insert Button State based on insertion progress
 function setInsertState(state) {
   if (state === 'ready') {
     startBtn.disabled = false;
@@ -203,6 +210,7 @@ function setInsertState(state) {
   }
 }
 
+// Start insertion process with Web Worker
 startBtn.onclick = () => {
   if (!isInserting) startInsertion();
 };
@@ -261,7 +269,6 @@ function startInsertion() {
       isInserting = false;
       cancelRequested = false;
 
-      // Optional confetti
       if (typeof confetti === 'function') {
         confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
       }
@@ -329,7 +336,7 @@ cancelBtn.onclick = () => {
   }
 };
 
-// Delete database button
+// Delete database button handler
 deleteDbBtn.onclick = () => {
   deleteDbBtn.disabled = true;
   updateStatus('Deleting database... Please wait.');
