@@ -1,37 +1,4 @@
-// PWA Install Prompt Handling
-let deferredPrompt;
-const installBanner = document.getElementById('installBanner');
-const installBtn = document.getElementById('installBtn');
-const dismissInstallBtn = document.getElementById('dismissInstallBtn');
-
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  installBanner.style.display = 'flex';
-});
-
-installBtn.onclick = async () => {
-  installBanner.style.display = 'none';
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-    await deferredPrompt.userChoice;
-    deferredPrompt = null;
-  }
-};
-
-dismissInstallBtn.onclick = () => {
-  installBanner.style.display = 'none';
-  deferredPrompt = null;
-};
-
-// Register Service Worker
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').then(() => {
-    console.log('Service Worker registered');
-  }).catch(e => console.error('Service Worker registration failed:', e));
-}
-
-// Constants
+// ===== Constants =====
 const DB_NAME = 'SriRamaKotiDB';
 const STORE_NAME = 'sriRamaStore';
 const DB_VERSION = 1;
@@ -39,25 +6,36 @@ const TOTAL_ENTRIES = 10000000; // 1 crore
 const BATCH_SIZE = 100000;
 const PAGE_SIZE = 5000;
 
+
+// ===== State variables =====
 let db;
 let worker;
 let currentPage = 0;
 let totalPages = 0;
+let isInserting = false;
+let cancelRequested = false;
+let batchInsertedCount = 0;
+let insertionStartTime;
 
-// Elements
+// ===== DOM Elements =====
 const startBtn = document.getElementById('startBtn');
+const cancelBtn = document.getElementById('cancelBtn');
 const deleteDbBtn = document.getElementById('deleteDbBtn');
 const statusP = document.getElementById('status');
+const totalTimeP = document.getElementById('totalTime');
 const logDiv = document.getElementById('logDiv');
 const container = document.getElementById('dataContainer');
+const progressBar = document.getElementById('progressBar');
 const firstPageBtn = document.getElementById('firstPageBtn');
 const prevPageBtn = document.getElementById('prevPageBtn');
 const nextPageBtn = document.getElementById('nextPageBtn');
 const lastPageBtn = document.getElementById('lastPageBtn');
 const pageInfo = document.getElementById('pageInfo');
 const goTopBtn = document.getElementById('goTopBtn');
+const insertTextInput = document.getElementById('insertText');
+const exportBtn = document.getElementById('exportBtn');
 
-// Menu elements
+// Menu buttons and page sections
 const menuAbout = document.getElementById('menuAbout');
 const menuInsert = document.getElementById('menuInsert');
 const menuTools = document.getElementById('menuTools');
@@ -65,6 +43,11 @@ const menuTools = document.getElementById('menuTools');
 const aboutPage = document.getElementById('aboutPage');
 const insertPage = document.getElementById('insertPage');
 const toolsPage = document.getElementById('toolsPage');
+
+// ===== Utility Functions =====
+startBtn.onclick = () => {
+  if (!isInserting) startInsertion();
+};
 
 function openDB() {
   return new Promise((resolve, reject) => {
@@ -88,8 +71,12 @@ function log(text) {
   logDiv.scrollTop = logDiv.scrollHeight;
 }
 
-function updateStatus(text) {
-  statusP.textContent = text;
+function updateStatus(text, showSpinner = false) {
+  if (showSpinner) {
+    statusP.innerHTML = `${text} <span class="ellipsis" aria-hidden="true"></span>`;
+  } else {
+    statusP.textContent = text;
+  }
 }
 
 function formatIndianNumber(num) {
@@ -98,10 +85,39 @@ function formatIndianNumber(num) {
   return (num / 10000000).toFixed(1) + ' Crore';
 }
 
+function formatDuration(ms) {
+  const totalSeconds = Math.floor(ms / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  const hDisplay = hours > 0 ? hours + (hours === 1 ? " hour " : " hours ") : "";
+  const mDisplay = minutes > 0 ? minutes + (minutes === 1 ? " minute " : " minutes ") : "";
+  const sDisplay = seconds > 0 ? seconds + (seconds === 1 ? " second" : " seconds") : "";
+  return (hDisplay + mDisplay + sDisplay).trim() || "0 seconds";
+}
+
+function updatePaginationButtons() {
+  firstPageBtn.disabled = currentPage === 0;
+  prevPageBtn.disabled = currentPage === 0;
+  nextPageBtn.disabled = currentPage >= totalPages - 1;
+  lastPageBtn.disabled = currentPage >= totalPages - 1;
+  pageInfo.textContent = totalPages > 0 ? `Page ${currentPage + 1} / ${totalPages}` : 'Page 0 / 0';
+}
+
 function loadPage(page) {
   container.innerHTML = '';
   const startId = page * PAGE_SIZE + 1;
-  const endId = Math.min(startId + PAGE_SIZE - 1, TOTAL_ENTRIES);
+
+  const maxId = Math.min(batchInsertedCount, TOTAL_ENTRIES);
+  if (startId > maxId) {
+    container.innerHTML = `<p style="text-align:center; color:#666;">More entries will appear here soon&hellip;</p>`;
+    updateStatus(`Page ${page + 1} not yet available. Please wait for insertion to progress.`);
+    updatePaginationButtons();
+    return;
+  }
+
+  const endId = Math.min(startId + PAGE_SIZE - 1, maxId);
 
   updateStatus(`Loading page ${page + 1} of ${totalPages} (IDs ${startId.toLocaleString()} - ${endId.toLocaleString()})...`);
 
@@ -131,200 +147,283 @@ function loadPage(page) {
   };
 }
 
-function updatePaginationButtons() {
-  firstPageBtn.disabled = currentPage === 0;
-  prevPageBtn.disabled = currentPage === 0;
-  nextPageBtn.disabled = currentPage >= totalPages - 1;
-  lastPageBtn.disabled = currentPage >= totalPages - 1;
-  pageInfo.textContent = `Page ${currentPage + 1} / ${totalPages}`;
-}
-
+// ===== Pagination handlers =====
 firstPageBtn.onclick = () => {
   if (currentPage !== 0) {
     currentPage = 0;
     loadPage(currentPage);
+    updatePaginationButtons();
   }
 };
-
 prevPageBtn.onclick = () => {
   if (currentPage > 0) {
     currentPage--;
     loadPage(currentPage);
+    updatePaginationButtons();
   }
 };
-
 nextPageBtn.onclick = () => {
   if (currentPage < totalPages - 1) {
     currentPage++;
     loadPage(currentPage);
+    updatePaginationButtons();
   }
 };
-
 lastPageBtn.onclick = () => {
   if (currentPage !== totalPages - 1) {
     currentPage = totalPages - 1;
     loadPage(currentPage);
+    updatePaginationButtons();
   }
 };
 
+// Insert button state handler
+function setInsertState(state) {
+  if (state === 'ready') {
+    startBtn.disabled = false;
+    startBtn.textContent = 'Start Insert 1 Crore';
+    startBtn.classList.remove('working');
+    cancelBtn.style.display = 'none';
+    progressBar.style.display = 'none';
+    totalTimeP.textContent = '';
+  } else if (state === 'inserting') {
+    startBtn.disabled = true;
+    startBtn.textContent = 'Inserting…';
+    startBtn.classList.add('working');
+    cancelBtn.style.display = 'inline-block';
+    cancelBtn.disabled = false;
+    progressBar.style.display = 'block';
+  } else if (state === 'done') {
+    startBtn.disabled = true;
+    startBtn.textContent = '✅ Insertion Complete';
+    startBtn.classList.remove('working');
+    cancelBtn.style.display = 'none';
+    progressBar.style.display = 'none';
+  }
+}
+
+// Start insertion function
 function startInsertion() {
   if (worker) worker.terminate();
   logDiv.textContent = '';
-  updateStatus('Starting insertion in background...');
-  startBtn.disabled = true;
+  updateStatus('Starting insertion in background...', true);
+  setInsertState('inserting');
+  isInserting = true;
+  cancelRequested = false;
+  batchInsertedCount = 0;
+  progressBar.value = 0;
+  insertionStartTime = performance.now();
 
-  worker = new Worker('insertWorker.js');
-  worker.postMessage({ DB_NAME, STORE_NAME, DB_VERSION, TOTAL_ENTRIES, BATCH_SIZE });
+  const customText = insertTextInput?.value?.trim() || "JAI SRI RAM| జై శ్రీ రామ్  |जय श्री रामः";
+
+  worker = new Worker('SriramaInsert.js');
+  worker.postMessage({ DB_NAME, STORE_NAME, DB_VERSION, TOTAL_ENTRIES, BATCH_SIZE, customText });
 
   worker.onmessage = e => {
+    if (e.data.error) {
+      log(`❌ Error: ${e.data.error}`);
+      updateStatus('Error during insertion.', false);
+      setInsertState('ready');
+      isInserting = false;
+      cancelRequested = false;
+      return;
+    }
     if (e.data.inserted) {
-      log(`📝 Inserted ${formatIndianNumber(e.data.inserted)} entries, batch took ${e.data.batchDurationSecs} seconds.`);
-      updateStatus(`Inserted ${formatIndianNumber(e.data.inserted)} / ${formatIndianNumber(TOTAL_ENTRIES)} entries`);
+      batchInsertedCount = e.data.inserted;
+      log(`📝 Inserted ${formatIndianNumber(batchInsertedCount)} entries, batch took ${e.data.batchDurationSecs} seconds.`);
+      updateStatus(`Inserted ${formatIndianNumber(batchInsertedCount)} / ${formatIndianNumber(TOTAL_ENTRIES)} entries`, true);
+
+      progressBar.value = Math.min(100, (batchInsertedCount / TOTAL_ENTRIES) * 100);
+
+      // Automatically show data every 1 lakh inserted records
+      if (batchInsertedCount % 100000 === 0 || batchInsertedCount === TOTAL_ENTRIES) {
+        const pageToLoad = Math.floor((batchInsertedCount - 1) / PAGE_SIZE);
+        totalPages = Math.ceil(Math.max(batchInsertedCount, TOTAL_ENTRIES) / PAGE_SIZE);
+
+        currentPage = pageToLoad;
+        loadPage(currentPage);
+        updatePaginationButtons();
+      }
     }
     if (e.data.done) {
+      const totalDuration = performance.now() - insertionStartTime;
       log('✅ Insertion complete.');
-      updateStatus('Insertion complete. Loading first page...');
+      updateStatus(`Insertion complete! Total time: ${formatDuration(totalDuration)}`);
+      totalTimeP.textContent = `Total time: ${formatDuration(totalDuration)}`;
       totalPages = Math.ceil(TOTAL_ENTRIES / PAGE_SIZE);
       currentPage = 0;
       loadPage(currentPage);
       updatePaginationButtons();
-      startBtn.disabled = false;
+      setInsertState('done');
+      isInserting = false;
+      cancelRequested = false;
+      deleteDbBtn.disabled = false;
     }
   };
 
   worker.onerror = e => {
-    log(`Worker error: ${e.message}`);
+    log(`⚠️ Worker error: ${e.message}`);
     updateStatus('Insertion error.');
-    startBtn.disabled = false;
+    setInsertState('ready');
+    isInserting = false;
+    cancelRequested = false;
   };
 }
 
-async function deleteDatabase() {
-  const firstConfirm = confirm(`⚠️ WARNING: Delete Database?\n\nThis will permanently delete "${DB_NAME}" with all entries.\n\nAre you sure you want to continue?`);
-  if (!firstConfirm) return;
+// Cancel insertion button
+cancelBtn.onclick = async () => {
+  if (!isInserting) return;
+  cancelBtn.disabled = true;
+  if (worker) {
+    worker.terminate();
+    worker = null;
+  }
+  cancelRequested = true;
+  updateStatus('Cancelling… Please wait.');
+  log('❌ User cancelled insertion.');
 
-  const confirmText = prompt(`⚠️ FINAL CONFIRMATION\n\nTo confirm deletion, type: DELETE\n\n(This action cannot be undone)`);
-  if (confirmText !== 'DELETE') {
-    if (confirmText !== null) alert('❌ Deletion cancelled - Text did not match "DELETE"');
+  try {
+    if (db) db.close();
+    const deleteRequest = indexedDB.deleteDatabase(DB_NAME);
+    deleteRequest.onsuccess = () => {
+      log('✅ Database deleted successfully after cancellation.');
+      updateStatus('Insertion cancelled. Database cleared.');
+      logDiv.textContent = '';
+      container.innerHTML = '';
+      currentPage = 0;
+      totalPages = 0;
+      updatePaginationButtons();
+      deleteDbBtn.disabled = true;
+      setInsertState('ready');
+      isInserting = false;
+      cancelBtn.style.display = 'none';
+      cancelBtn.disabled = false;
+      progressBar.style.display = 'none';
+      totalTimeP.textContent = '';
+    };
+    deleteRequest.onerror = () => {
+      log('❌ Database deletion failed after cancellation.');
+      updateStatus('Database deletion failed after cancellation.');
+      cancelBtn.disabled = false;
+    };
+  } catch (e) {
+    log('❌ Exception during cancellation: ' + e);
+    updateStatus('Error during cancellation.');
+    cancelBtn.disabled = false;
+  }
+  if ('caches' in window) {
+    caches.keys().then(names => names.forEach(name => caches.delete(name)));
+    log('🧹 Cache cleared after cancellation.');
+  }
+};
+
+// Delete database button
+deleteDbBtn.onclick = async () => {
+  deleteDbBtn.disabled = true;
+  updateStatus('Deleting database... Please wait.');
+  log('🗑️ User initiated immediate database deletion.');
+
+  try {
+    if (worker) {
+      worker.terminate();
+      worker = null;
+      isInserting = false;
+      cancelRequested = false;
+    }
+    if (db) db.close();
+
+    const deleteRequest = indexedDB.deleteDatabase(DB_NAME);
+    deleteRequest.onsuccess = () => {
+      log('✅ Database deleted successfully.');
+      updateStatus('Database deleted successfully.');
+      logDiv.textContent = '';
+      container.innerHTML = '';
+      currentPage = 0;
+      totalPages = 0;
+      updatePaginationButtons();
+      setInsertState('ready');
+      deleteDbBtn.disabled = true;
+      startBtn.disabled = false;
+      cancelBtn.style.display = 'none';
+      cancelBtn.disabled = false;
+      progressBar.style.display = 'none';
+      totalTimeP.textContent = '';
+    };
+    deleteRequest.onerror = () => {
+      log('❌ Database deletion failed.');
+      updateStatus('Database deletion failed.');
+      deleteDbBtn.disabled = false;
+    };
+    deleteRequest.onblocked = () => {
+      log('⚠️ Database deletion blocked - please close other tabs.');
+      updateStatus('Database deletion blocked. Close other tabs and try again.');
+      deleteDbBtn.disabled = false;
+    };
+
+    if ('caches' in window) {
+      caches.keys().then(names => names.forEach(name => caches.delete(name)));
+      log('🧹 Cache cleared after database deletion.');
+    }
+  } catch (err) {
+    log(`❌ Exception during database deletion: ${err}`);
+    updateStatus('Error during database deletion.');
+    deleteDbBtn.disabled = false;
+  }
+};
+
+// Export data button
+exportBtn?.addEventListener('click', async () => {
+  if (!db) {
+    alert('Database not open.');
     return;
   }
+  try {
+    const tx = db.transaction(STORE_NAME, 'readonly');
+    const store = tx.objectStore(STORE_NAME);
+    const items = [];
 
-  updateStatus('Deleting database...');
-  log('🗑️ Initiating database deletion...');
+    await new Promise((resolve, reject) => {
+      store.openCursor().onsuccess = event => {
+        const cursor = event.target.result;
+        if (cursor) {
+          items.push(cursor.value);
+          cursor.continue();
+        } else {
+          resolve();
+        }
+      };
+      store.openCursor().onerror = event => reject(event.target.error);
+    });
 
-  if (db) {
-    db.close();
-    log('📡 Database connection closed');
+    const blob = new Blob([JSON.stringify(items, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'rama_koti_backup.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    alert(`Exported ${items.length} records successfully.`);
+  } catch (err) {
+    alert('Export failed: ' + err);
   }
+});
 
-  const request = indexedDB.deleteDatabase(DB_NAME);
+// Navigation menu handlers
+function showSection(section) {
+  aboutPage.style.display = section === 'about' ? 'block' : 'none';
+  insertPage.style.display = section === 'insert' ? 'block' : 'none';
+  toolsPage.style.display = section === 'tools' ? 'block' : 'none';
 
-  request.onsuccess = () => {
-    log('✅ Database deleted successfully');
-    alert(`✅ Success!\n\nDatabase "${DB_NAME}" has been permanently deleted.`);
-
-    logDiv.textContent = '';
-    container.innerHTML = '';
-    currentPage = 0;
-    totalPages = 0;
-
-    updateStatus('Database deleted. Ready for fresh start.');
-    updatePaginationButtons();
-
-    startBtn.disabled = false;
-    deleteDbBtn.disabled = true;
-  };
-
-  request.onerror = (e) => {
-    log('❌ Database deletion failed');
-    alert(`❌ Error!\n\nFailed to delete database "${DB_NAME}".\n\nError: ${e.target.error}`);
-    updateStatus('Database deletion failed.');
-  };
-
-  request.onblocked = () => {
-    log('⚠️ Database deletion blocked - close other tabs');
-    alert('⚠️ Deletion Blocked!\n\nPlease close all other tabs/windows using this application and try again.');
-    updateStatus('Database deletion blocked. Close other tabs and retry.');
-  };
+  menuAbout.disabled = section === 'about';
+  menuInsert.disabled = section === 'insert';
+  menuTools.disabled = section === 'tools';
 }
 
-startBtn.onclick = async () => {
-  try {
-    await openDB();
-    deleteDbBtn.disabled = false;
-    startInsertion();
-  } catch (err) {
-    updateStatus('Failed to open DB: ' + err);
-  }
-};
+menuAbout.onclick = () => showSection('about');
+menuInsert.onclick = () => showSection('insert');
+menuTools.onclick = () => showSection('tools');
 
-deleteDbBtn.onclick = deleteDatabase;
-
-// Menu navigation
-menuAbout.onclick = () => {
-  aboutPage.style.display = 'block';
-  insertPage.style.display = 'none';
-  toolsPage.style.display = 'none';
-  menuAbout.disabled = true;
-  menuInsert.disabled = false;
-  menuTools.disabled = false;
-};
-
-menuInsert.onclick = () => {
-  aboutPage.style.display = 'none';
-  insertPage.style.display = 'block';
-  toolsPage.style.display = 'none';
-  menuAbout.disabled = false;
-  menuInsert.disabled = true;
-  menuTools.disabled = false;
-};
-
-menuTools.onclick = () => {
-  aboutPage.style.display = 'none';
-  insertPage.style.display = 'none';
-  toolsPage.style.display = 'block';
-  menuAbout.disabled = false;
-  menuInsert.disabled = false;
-  menuTools.disabled = true;
-};
-
-window.onload = async () => {
-  menuAbout.disabled = true;
-  menuInsert.disabled = false;
-  menuTools.disabled = false;
-  aboutPage.style.display = 'block';
-  insertPage.style.display = 'none';
-  toolsPage.style.display = 'none';
-
-  try {
-    await openDB();
-    const countReq = db.transaction(STORE_NAME, 'readonly').objectStore(STORE_NAME).count();
-    countReq.onsuccess = () => {
-      if (countReq.result > 0) {
-        deleteDbBtn.disabled = false;
-        totalPages = Math.ceil(countReq.result / PAGE_SIZE);
-        currentPage = 0;
-        loadPage(currentPage);
-        updatePaginationButtons();
-        startBtn.disabled = true;
-        updateStatus(`Loaded existing ${formatIndianNumber(countReq.result)} entries. Showing page 1.`);
-      } else {
-        deleteDbBtn.disabled = true;
-        startBtn.disabled = false;
-        updateStatus('Database empty. Click "Start Insert 1 Crore" to begin.');
-      }
-    };
-    countReq.onerror = () => {
-      updateStatus('Unable to read database count.');
-    };
-  } catch {
-    deleteDbBtn.disabled = true;
-    startBtn.disabled = false;
-    updateStatus('Database not initialized. Click "Start Insert 1 Crore" to begin.');
-  }
-};
-
-// Go to Top Button accessibility
+// Accessibility for scroll to top button
 const liveRegion = document.createElement('div');
 liveRegion.setAttribute('aria-live', 'polite');
 liveRegion.style.position = 'absolute';
@@ -346,3 +445,61 @@ goTopBtn.addEventListener('click', () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
   liveRegion.textContent = 'Scrolled to top';
 });
+
+// On page load
+window.onload = async () => {
+  showSection('about');
+
+  try {
+    await openDB();
+
+    const tx = db.transaction(STORE_NAME, 'readonly');
+    const store = tx.objectStore(STORE_NAME);
+    const countReq = store.count();
+
+    countReq.onsuccess = () => {
+      const count = countReq.result;
+      if (count > 0) {
+        batchInsertedCount = count;
+        deleteDbBtn.disabled = false;
+        totalPages = Math.ceil(count / PAGE_SIZE);
+        currentPage = 0;
+        loadPage(currentPage);
+        updatePaginationButtons();
+        setInsertState('done');
+        updateStatus(`Loaded existing ${formatIndianNumber(count)} entries. Showing page 1.`);
+        startBtn.disabled = true;
+        progressBar.style.display = 'none';
+      } else {
+        deleteDbBtn.disabled = true;
+        firstPageBtn.disabled = true;
+        prevPageBtn.disabled = true;
+        nextPageBtn.disabled = true;
+        lastPageBtn.disabled = true;
+        setInsertState('ready');
+        updateStatus('Database empty. Click "Start Insert 1 Crore" to begin.');
+        progressBar.style.display = 'none';
+      }
+    };
+
+    countReq.onerror = () => {
+      updateStatus('Unable to read database count.');
+      setInsertState('ready');
+      firstPageBtn.disabled = true;
+      prevPageBtn.disabled = true;
+      nextPageBtn.disabled = true;
+      lastPageBtn.disabled = true;
+      progressBar.style.display = 'none';
+    };
+
+  } catch {
+    deleteDbBtn.disabled = true;
+    firstPageBtn.disabled = true;
+    prevPageBtn.disabled = true;
+    nextPageBtn.disabled = true;
+    lastPageBtn.disabled = true;
+    setInsertState('ready');
+    updateStatus('Database not initialized. Click "Start Insert 1 Crore" to begin.');
+    progressBar.style.display = 'none';
+  }
+};

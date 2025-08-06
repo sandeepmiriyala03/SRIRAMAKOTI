@@ -1,10 +1,11 @@
 {
-  "name": "Sri Rama Koti IndexedDB App",
-  "short_name": "Sri Rama Koti",
-  "start_url": "./index.html",
+  "name": "Sri Rama Koti",
+  "short_name": "RamaKoti",
+  "start_url": ".",
   "display": "standalone",
   "background_color": "#f9f9f9",
   "theme_color": "#1769aa",
+  "description": "Devotional app for writing 1 crore Rama Koti entries digitally.",
   "icons": [
     {
       "src": "icon-192.png",
@@ -16,5 +17,16 @@
       "sizes": "512x512",
       "type": "image/png"
     }
-  ]
+  ],
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "categories": ["religion", "pwa", "spiritual", "devotional"],
+  "screenshots": [
+    {
+      "src": "screenshot1.png",
+      "sizes": "540x720",
+      "type": "image/png"
+    }
+  ],
+  "prefer_related_applications": false
 }

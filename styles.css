@@ -7,6 +7,8 @@
   --text-color: #333;
   --border-radius: 8px;
   --box-shadow: 0 0 15px rgba(0,0,0,0.1);
+  --success-color: #4caf50;
+  --error-color: #d9534f;
 }
 
 body {
@@ -20,17 +22,86 @@ body {
   color: var(--text-color);
   min-height: 100vh;
   user-select: text;
+  scroll-behavior: smooth;
 }
 
+/* Headings */
 h1 {
   text-align: center;
   color: var(--primary-color);
   user-select: none;
+  margin-bottom: 1.5em;
 }
 
+h2, h3 {
+  color: var(--primary-color);
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+}
+
+/* Navigation menu */
+#menuBar {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+#menuBar button {
+  margin: 0 10px 20px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  background-color: var(--primary-color);
+  color: white;
+  transition: background-color 0.3s ease;
+  min-width: 120px;
+  user-select: none;
+}
+
+#menuBar button:hover:not(:disabled) {
+  background-color: var(--primary-hover);
+}
+
+#menuBar button:disabled {
+  background-color: #0f4f85;
+  cursor: default;
+  opacity: 0.7;
+}
+
+/* Section styling */
+section {
+  max-width: 900px;
+  background-color: #f1f8ff;
+  border-radius: var(--border-radius);
+  padding: 20px 25px;
+  margin: 20px auto;
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text-color);
+}
+
+#aboutPage {
+  display: block; /* Show About page initially */
+}
+
+#insertPage,
+#toolsPage {
+  display: none;
+}
+
+/* Lists */
+ul {
+  list-style: disc;
+  margin-left: 20px;
+  margin-top: 0.5em;
+}
+
+/* Buttons */
 #buttonsBar {
   text-align: center;
-  margin: 20px 0;
+  margin: 20px 0 15px;
 }
 
 button {
@@ -45,6 +116,7 @@ button {
   box-shadow: 0 4px 8px rgba(23,105,170,0.4);
   transition: background-color 0.3s ease;
   min-width: 110px;
+  user-select: none;
 }
 
 button:hover:not(:disabled) {
@@ -56,13 +128,31 @@ button:disabled {
   cursor: default;
 }
 
+button.working {
+  background: #f5af19;
+  color: #fff;
+  cursor: not-allowed;
+}
+
+/* Status */
 #status {
   font-weight: 600;
   text-align: center;
   margin-top: 10px;
   min-height: 40px;
+  user-select: none;
+  color: var(--primary-color);
 }
 
+/* Total Time Display */
+#totalTime {
+  font-weight: 700;
+  text-align: center;
+  color: var(--primary-color);
+  margin-top: 4px;
+}
+
+/* Log display */
 #logDiv {
   background: var(--log-bg);
   padding: 10px;
@@ -74,8 +164,11 @@ button:disabled {
   margin-top: 15px;
   white-space: pre-line;
   border: 1px solid #ccc;
+  user-select: text;
+  color: var(--text-color);
 }
 
+/* Data container */
 #dataContainer {
   margin-top: 20px;
   padding: 15px;
@@ -84,21 +177,26 @@ button:disabled {
   max-height: 400px;
   overflow-y: auto;
   border: 1px solid #ddd;
+  box-shadow: var(--box-shadow);
+  font-size: 15px;
+  color: var(--primary-color);
+  user-select: text;
 }
 
+/* Entry items */
 .ramadiv {
   background: #d4e3fa;
   padding: 8px 12px;
   border-radius: 6px;
   margin: 5px 5px 5px 0;
   border: 1px solid #a2c4e7;
-  font-size: 15px;
   color: #174a8a;
   display: inline-block;
   white-space: nowrap;
   box-shadow: 0 1px 2px rgba(0,0,0,0.05);
   transition: background-color 0.3s ease;
   cursor: default;
+  user-select: text;
 }
 
 .ramadiv:hover {
@@ -106,9 +204,11 @@ button:disabled {
   border-color: #1061e0;
 }
 
+/* Pagination */
 #paginationBar {
   margin: 20px 0;
   text-align: center;
+  user-select: none;
 }
 
 #paginationBar button {
@@ -124,6 +224,7 @@ button:disabled {
   cursor: pointer;
   box-shadow: 0 4px 8px rgba(23,105,170,0.4);
   transition: background-color 0.3s ease;
+  user-select: none;
 }
 
 #paginationBar button:disabled {
@@ -141,7 +242,37 @@ button:disabled {
   margin: 0 15px;
 }
 
-/* Install prompt banner top-right */
+/* Progress bar */
+progress#progressBar {
+  display: none;
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  height: 20px;
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 15px auto;
+  background-color: #ddd;
+}
+
+progress#progressBar::-webkit-progress-bar {
+  background-color: #ddd;
+  border-radius: 10px;
+}
+
+progress#progressBar::-webkit-progress-value {
+  background-color: var(--primary-color);
+  border-radius: 10px;
+  transition: width 0.3s ease;
+}
+
+progress#progressBar::-moz-progress-bar {
+  background-color: var(--primary-color);
+  border-radius: 10px;
+  transition: width 0.3s ease;
+}
+
+/* Install prompt banner */
 #installBanner {
   position: fixed;
   top: 15px;
@@ -178,6 +309,7 @@ button:disabled {
   cursor: pointer;
   min-width: auto;
   transition: background-color 0.3s ease;
+  user-select: none;
 }
 
 #installBanner button:hover {
@@ -185,7 +317,7 @@ button:disabled {
 }
 
 #installBanner button.dismissBtn {
-  background: #d9534f;
+  background: var(--error-color);
   color: white;
 }
 
@@ -193,32 +325,53 @@ button:disabled {
   background-color: #b03a3a;
 }
 
-/* Go to Top Button - positioned at middle right */
+/* Toast notifications */
+#toast {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--primary-color);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 24px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  font-weight: 600;
+  opacity: 0.9;
+  z-index: 10001;
+  display: none;
+  user-select: none;
+}
+
+/* Scroll to top button */
 #goTopBtn {
-  display: none; 
-  position: fixed; 
-  top: 50%; 
+  display: none;
+  position: fixed;
+  top: 50%;
   right: 30px;
   transform: translateY(-50%);
-  padding: 14px 20px; 
-  font-size: 24px; 
-  font-weight: 700; 
-  background-color: #1769aa; 
-  color: white; 
-  border: none; 
-  border-radius: 50px; 
-  cursor: pointer; 
-  box-shadow: 0 6px 18px rgba(23,105,170,0.7); 
-  z-index: 9999; 
+  padding: 14px 20px;
+  font-size: 24px;
+  font-weight: 700;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(23,105,170,0.7);
+  z-index: 9999;
   user-select: none;
   transition: background-color 0.3s ease;
 }
 
-#goTopBtn:hover {
-  background-color: #0f4f85;
+#goTopBtn:hover,
+#goTopBtn:focus {
+  background-color: var(--primary-hover);
+  outline: none;
+  box-shadow: 0 0 8px 3px #ffbf47;
 }
 
-/* Copyright footer */
+/* Footer */
 #footer {
   text-align: center;
   margin-top: 40px;
@@ -227,50 +380,128 @@ button:disabled {
   font-size: 14px;
   color: #666;
   background-color: var(--background-color);
+  user-select: none;
 }
 
 #footer p {
   margin: 0;
   font-weight: 500;
 }
-#menuBar button {
-      margin: 0 10px 20px;
-      font-weight: 600;
-      cursor: pointer;
-      padding: 8px 16px;
-      border-radius: 6px;
-      border: none;
-      background-color: #1769aa;
-      color: white;
-      transition: background-color 0.3s ease;
-    }
-    #menuBar button:disabled {
-      background-color: #0f4f85;
-      cursor: default;
-      opacity: 0.7;
-    }
-    #aboutPage, #insertPage, #toolsPage {
-      max-width: 900px;
-      background-color: #f1f8ff;
-      border-radius: 8px;
-      padding: 20px;
-      margin: 20px auto;
-      font-family: Arial, sans-serif;
-      font-size: 16px;
-      line-height: 1.5;
-      color: #333;
-    }
-    #aboutPage, #toolsPage, #insertPage {
-      display: none;
-    }
-    #aboutPage h2, #aboutPage h3, #toolsPage h2 ,#insertPage h2 {
-      color: #1769aa;
-    }
-    #aboutPage ul, #toolsPage ul  {
-      list-style: disc;
-      margin-left: 20px;
-    }
-    #goTopBtn:focus {
-      outline: 3px solid #ffbf47;
-      outline-offset: 2px;
-    }
+
+/* Animated ellipsis */
+@keyframes ellipsis {
+  to {
+    width: 2.5em;
+  }
+}
+
+.ellipsis::after {
+  content: '...';
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  animation: ellipsis 1s infinite steps(4);
+  width: 0;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  body {
+    padding: 15px;
+  }
+  #menuBar button {
+    width: 100%;
+    margin: 5px 0;
+  }
+  #dataContainer {
+    max-height: 300px;
+  }
+  #logDiv {
+    height: 120px;
+  }
+  #installBanner {
+    width: calc(100% - 30px);
+    right: 15px;
+    top: auto;
+    bottom: 15px;
+    left: 15px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  button {
+    padding: 14px 24px;
+    font-size: 18px;
+    min-width: 100%;
+  }
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --primary-color: #0d47a1;
+    --primary-hover: #002171;
+    --background-color: #121212;
+    --card-bg: #1e1e1e;
+    --log-bg: #2c2c2c;
+    --text-color: #e0e0e0;
+    --success-color: #4caf50;
+    --error-color: #d9534f;
+  }
+  body {
+    background: var(--background-color);
+    color: var(--text-color);
+  }
+  section {
+    background-color: #1f1f1f;
+    border: 1px solid #333;
+  }
+  #logDiv {
+    background: var(--log-bg);
+    border: 1px solid #444;
+  }
+  button {
+    background-color: var(--primary-color);
+    color: white;
+  }
+  #installBanner {
+    background: var(--primary-color);
+  }
+  #toast {
+    background-color: var(--primary-color);
+  }
+}
+
+/* Scrollbar customization */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-hover);
+}
+
+/* Hide scrollbars on print */
+@media print {
+  ::-webkit-scrollbar { display: none; }
+  body {
+    background: white;
+    color: black;
+  }
+  #menuBar, #installBanner, #goTopBtn, #paginationBar, #buttonsBar, #exportBtn {
+    display: none !important;
+  }
+  section {
+    page-break-inside: avoid;
+  }
+  button {
+    display: none !important;
+  }
+  #dataContainer, #logDiv {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+}
