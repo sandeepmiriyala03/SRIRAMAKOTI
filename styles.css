@@ -530,3 +530,27 @@ Print Styles
     overflow: visible !important;
   }
 }
+/*------------------------------------------------------------
+Sri Rama Koti App Icon Styling
+------------------------------------------------------------*/
+.sriRamaIcon {
+  display: inline-block;
+  vertical-align: middle;
+  width: 40px;    /* Adjust for desired size */
+  height: 40px;
+  border-radius: 12px;   /* Gives slightly rounded corners */
+  box-shadow: 0 2px 12px rgba(23, 105, 170, 0.10); /* Soft blue shadow */
+  background: white;
+  padding: 4px;
+  object-fit: cover;
+  margin-right: 14px;    /* Adds spacing when used in nav */
+  border: 2px solid var(--primary-color, #1769aa);
+  transition: transform 0.18s cubic-bezier(.77,0,.18,1), box-shadow 0.18s;
+}
+
+.sriRamaIcon:hover, .sriRamaIcon:focus {
+  transform: scale(1.12) rotate(-5deg);
+  box-shadow: 0 6px 24px rgba(23, 105, 170, 0.23);
+  outline: none;
+  border-color: var(--primary-hover, #0f4f85);
+}
