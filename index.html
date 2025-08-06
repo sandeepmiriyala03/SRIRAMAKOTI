@@ -37,8 +37,7 @@
     <p>రామాయ రామభద్రాయ రామచంద్రాయ వేధసే . రఘునాథాయ నాథాయ సితాయ</p>
     <p>Lord Sri Rama is the seventh avatar of Vishnu, known for his righteousness and virtue.</p>
     <h3>Spiritual Significance</h3>
-   <p>The epic Ramayana narrates his life, emphasizing dharma, devotion, and moral excellence. Rama's virtue inspires millions of devotees worldwide.</p>
-
+    <p>The epic Ramayana narrates his life, emphasizing dharma, devotion, and moral excellence. Rama's virtue inspires millions of devotees worldwide.</p>
     <div>
       <h3>What is Rama Koti?</h3>
       <p>Rama Koti is a devotional practice where devotees write the name of Lord Rama one crore times, symbolizing their devotion and seeking blessings.</p>
@@ -48,46 +47,41 @@
       <p>Rama Koti is a way to express love and devotion towards Lord Rama, and it is performed with great reverence in many Hindu households.</p>
       <p>It is said that writing Rama Koti brings peace, prosperity, and spiritual upliftment to the devotee.</p>
       <p>Many people also believe that it helps in overcoming obstacles and achieving success in life through the blessings of Lord Rama.</p>
-      <p>Overall, Rama Koti is a beautiful expression of faith and devotion that connects devotees with the divine essence of Lord Rama.</p>  
+      <p>Overall, Rama Koti is a beautiful expression of faith and devotion that connects devotees with the divine essence of Lord Rama.</p>
       <p>For more information, you can visit the <a href="https://en.wikipedia.org/wiki/Rama_Koti" target="_blank" rel="noopener noreferrer">Rama Koti Wikipedia page</a>.</p>
-       </div>
+    </div>
   </section>
 
   <!-- Insert Section -->
   <section id="insertPage" role="region" aria-live="polite" aria-atomic="true" tabindex="0" hidden>
     <h2>RAMA KOTI - Write 1 Crore Times</h2>
-   <p>Writing Rama Koti means writing Lord Rama’s name one crore (10 million) times. It is a powerful spiritual practice that brings peace, focus, and positive energy. Traditionally done by hand, now you can write Rama Koti digitally, making it faster and easier while preserving the same blessings. Simply start the process and let your device help you complete this sacred journey.
-   </p>
-   <p>రామ కోటి రాయడం అంటే రాముడి నామాన్ని కోటి (10 మిలియన్) సార్లు రాయడం. ఇది శాంతి, దృష్టి మరియు సానుకూల శక్తిని తెచ్చే ఆధ్యాత్మిక సాధన. సాంప్రదాయకంగా చేతితో చేసే మీరు ఇప్పుడు రామ కోటిని డిజిటల్‌గా వ్రాయవచ్చు, వేగంగా మరియు సులభంగా.</p>
+    <p>Writing Rama Koti means writing Lord Rama’s name one crore (10 million) times. It is a powerful spiritual practice that brings peace, focus, and positive energy. Traditionally done by hand, now you can write Rama Koti digitally, making it faster and easier while preserving the same blessings. Simply start the process and let your device help you complete this sacred journey.</p>
+    <p>రామ కోటి రాయడం అంటే రాముడి నామాన్ని కోటి (10 మిలియన్) సార్లు రాయడం. ఇది శాంతి, దృష్టి మరియు సానుకూల శక్తిని తెచ్చే ఆధ్యాత్మిక సాధన. సాంప్రదాయకంగా చేతితో చేసే మీరు ఇప్పుడు రామ కోటిని డిజిటల్‌గా వ్రాయవచ్చు, వేగంగా మరియు సులభంగా.</p>
     <label for="insertText"><b>Rama Koti Phrase</b></label>
     <textarea id="insertText" rows="3" aria-label="Rama Koti Phrase">JAI SRI RAM| జై శ్రీ రామ్| जय श्री रामः</textarea>
-    
     <div id="buttonsBar" aria-label="Controls">
-      <button id="startBtn" title="Insert 1 crore entries">Start Insert</button>
+      <button id="startBtn" title="Insert 1 crore entries">Start Insertion</button>
       <button id="cancelBtn" title="Cancel insertion" style="display:none;">Cancel</button>
       <button id="deleteBtn" title="Delete database">Delete Database</button>
       <button id="exportBtn" title="Export data">Export Data</button>
-      <progress id="progressBar" max="100" value="0" aria-label="Insertion progress"></progress>
+      <progress id="progressBar" max="100" value="0" aria-label="Insertion progress" style="display:none"></progress>
     </div>
     <p id="status" aria-live="polite" aria-atomic="true">Status: Ready</p>
     <p id="totalTime" aria-live="polite" aria-atomic="true"></p>
     <div id="logDiv" aria-live="polite" aria-atomic="true" tabindex="0" style="max-height:120px; overflow:auto;"></div>
-
     <div id="paginationBar" aria-label="Pagination">
-      <button id="firstPage" disabled aria-label="First page">« First</button>
-      <button id="prevPage" disabled aria-label="Previous page">‹ Prev</button>
+      <button id="firstPageBtn" disabled aria-label="First page">« First</button>
+      <button id="prevPageBtn" disabled aria-label="Previous page">‹ Prev</button>
       <span id="pageInfo" aria-live="polite" aria-atomic="true">Page 0 / 0</span>
-      <button id="nextPage" disabled aria-label="Next page">Next ›</button>
-      <button id="lastPage" disabled aria-label="Last page">Last »</button>
+      <button id="nextPageBtn" disabled aria-label="Next page">Next ›</button>
+      <button id="lastPageBtn" disabled aria-label="Last page">Last »</button>
     </div>
-
     <div id="dataContainer" aria-live="polite" aria-atomic="true" tabindex="0" style="max-height: 250px; overflow:auto;"></div>
   </section>
 
   <!-- Tools Section -->
   <section id="toolsPage" role="region" aria-live="polite" aria-atomic="true" tabindex="0" hidden>
     <h2>Tools Used</h2>
-    <p>...</p>
     <ul>
       <li>IndexedDB for offline storage</li>
       <li>Web Workers</li>
@@ -112,7 +106,7 @@
 
   <script src="main.js" defer></script>
   <script>
-    // PWA Install Prompt control (existing, with new logic to hide if already installed)
+    // PWA Install Prompt logic...
     (function(){
       const menuInstallBtn = document.getElementById("menuInstall");
       const installPopup = document.getElementById("installPopup");
@@ -121,17 +115,14 @@
       const installText = document.getElementById("installText");
       let deferredPrompt;
 
-      // Detect if app is already installed (iOS & others)
       function isAppInstalled() {
         return (window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
       }
-
       window.addEventListener('load', () => {
         if (isAppInstalled()) {
           if(menuInstallBtn) menuInstallBtn.style.display = 'none';
         }
       });
-
       window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
@@ -139,7 +130,6 @@
           menuInstallBtn.style.display = 'inline-block';
         }
       });
-
       if (menuInstallBtn) {
         menuInstallBtn.addEventListener('click', () => {
           if(isAppInstalled()){
@@ -159,7 +149,6 @@
           }
         });
       }
-
       if (installPopupBtn) {
         installPopupBtn.addEventListener('click', async () => {
           if (!deferredPrompt) return;
@@ -172,19 +161,16 @@
           deferredPrompt = null;
         });
       }
-
       if (installPopupClose) {
         installPopupClose.addEventListener('click', () => {
           installPopup.classList.remove('active');
         });
       }
-
       document.addEventListener('click', (event) => {
         if(installPopup.classList.contains('active') && !installPopup.contains(event.target) && event.target !== menuInstallBtn){
           installPopup.classList.remove('active');
         }
       });
-
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js').then(() => {
           console.log('Service Worker registered');
@@ -194,6 +180,5 @@
       }
     })();
   </script>
-
 </body>
 </html>
