@@ -10,158 +10,190 @@
 </head>
 <body>
 
+  <!-- Rama Icon Hero -->
+  <img src="icon-512.png" alt="Sri Rama Koti Lord Rama Icon" class="sriRamaIcon" />
+
+  <!-- Main Heading -->
   <h1>🕉 Sri Rama Koti</h1>
+
+  <!-- Navigation Bar -->
   <nav id="menuBar" aria-label="Main menu">
-   
-    <img src="icon-512.png" alt="Sri Rama Koti logo" class="sriRamaIcon menuIcon" /
     <button id="menuAbout" disabled>About Rama</button>
     <button id="menuInsert">Write RamaKoti</button>
     <button id="menuTools">Tools Used</button>
-    <button id="menuInstallApp" style="display:none;">Install App</button>
-    <img src="icon-192.png" alt="Sri Rama Koti icon" class="menuIcon sriRamaIcon" />
+    <button id="menuInstall" style="display: none;">Install App</button>
   </nav>
 
-  <!-- Slide-in Install Popup -->
+  <!-- Install App Popup -->
   <div id="installPopup" class="install-popup" role="dialog" aria-live="polite" aria-label="Install application prompt">
     <span id="installText">Install this app for a better experience.</span>
     <button id="installPopupBtn" aria-label="Install Application">Install</button>
-    <button class="close-popup" id="closeInstallPopup" aria-label="Close install prompt">✕</button>
+    <button class="close-popup" id="closeInstallPopup" aria-label="Close install prompt">×</button>
   </div>
 
+  <!-- About Section -->
   <section id="aboutPage" role="region" aria-live="polite" aria-atomic="true" tabindex="0">
     <h2>About Sri Rama</h2>
-    <p>రామాయ రామభద్రాయ రామచంద్రాయ వేధసే .రఘునాథాయ నాథాయ సితాయః పతయే నమః</p>
+    <p>రామాయ రామభద్రాయ రామచంద్రాయ వేధసే . రఘునాథాయ నాథాయ సితాయ</p>
     <p>Lord Sri Rama is the seventh avatar of Vishnu, known for his righteousness and virtue.</p>
     <h3>Spiritual Significance</h3>
-    <p>
-      The epic Ramayana narrates his life, emphasizing dharma, devotion, and moral excellence.
-      Rama's virtue inspires millions of devotees worldwide.
-    </p>
+   <p>The epic Ramayana narrates his life, emphasizing dharma, devotion, and moral excellence. Rama's virtue inspires millions of devotees worldwide.</p>
+
     <div>
       <h3>What is Rama Koti?</h3>
-      <p>
-        Rama Koti is the devotional practice of chanting or writing the name of Lord Sri Rama one crore (10 million) times.
-        This sacred act promotes concentration, inner peace, and connection to divine blessings.
-      </p>
-      <p>
-        Traditionally, it’s done by hand, but now also embraced digitally, making this powerful spiritual exercise accessible anytime and anywhere.
-      </p>
-      <p style="font-style: italic; color: #555;">
-        "Repetition of Rama's name is believed to open the door to divine grace and eternal bliss."
-      </p>
-      <p>
-        To perform Rama Koti, simply click the 'Insert 1 Crore Rama Koti' button and 1 crore Rama Koti entries will be digitally inserted and stored on your device.
-      </p>
-    </div>
+      <p>Rama Koti is a devotional practice where devotees write the name of Lord Rama one crore times, symbolizing their devotion and seeking blessings.</p>
+      <p>It is believed that this practice purifies the mind and soul, bringing peace and spiritual fulfillment.</p>
+      <p>In Telugu, it is known as "రామ కోటి" and in Hindi as "राम कोटि".</p>
+      <p>Devotees often write "జై శ్రీ రామ్" or "जय श्री रामः" as part of this practice, which translates to "Victory to Lord Rama".</p>
+      <p>Rama Koti is a way to express love and devotion towards Lord Rama, and it is performed with great reverence in many Hindu households.</p>
+      <p>It is said that writing Rama Koti brings peace, prosperity, and spiritual upliftment to the devotee.</p>
+      <p>Many people also believe that it helps in overcoming obstacles and achieving success in life through the blessings of Lord Rama.</p>
+      <p>Overall, Rama Koti is a beautiful expression of faith and devotion that connects devotees with the divine essence of Lord Rama.</p>  
+      <p>For more information, you can visit the <a href="https://en.wikipedia.org/wiki/Rama_Koti" target="_blank" rel="noopener noreferrer">Rama Koti Wikipedia page</a>.</p>
+       </div>
   </section>
 
+  <!-- Insert Section -->
   <section id="insertPage" role="region" aria-live="polite" aria-atomic="true" tabindex="0" hidden>
     <h2>RAMA KOTI - Write 1 Crore Times</h2>
-    <p>
-      Writing Rama Koti means writing Lord Rama’s name one crore (10 million) times. It is a powerful spiritual practice that brings peace, focus, and positive energy. Traditionally done by hand, now you can write Rama Koti digitally, making it faster and easier while preserving the same blessings. Simply start the process and let your device help you complete this sacred journey.
-    </p>
-    <p>
-      రామ కోటి రాయడం అంటే రాముడి నామాన్ని కోటి (10 మిలియన్) సార్లు రాయడం.
-      ఇది శాంతి, దృష్టి మరియు సానుకూల శక్తిని తెచ్చే ఆధ్యాత్మిక సాధన.
-      సాంప్రదాయకంగా చేతితో చేసే మీరు ఇప్పుడు రామ కోటిని డిజిటల్‌గా వ్రాయవచ్చు, వేగంగా మరియు సులభంగా.
-    </p>
-    <label for="insertText"><b>Rama Koti Phrase:</b></label>
-    <textarea id="insertText" rows="3">JAI SRI RAM| జై శ్రీ రామ్  |जय श्री रामः</textarea>
-
+   <p>Writing Rama Koti means writing Lord Rama’s name one crore (10 million) times. It is a powerful spiritual practice that brings peace, focus, and positive energy. Traditionally done by hand, now you can write Rama Koti digitally, making it faster and easier while preserving the same blessings. Simply start the process and let your device help you complete this sacred journey.
+   </p>
+   <p>రామ కోటి రాయడం అంటే రాముడి నామాన్ని కోటి (10 మిలియన్) సార్లు రాయడం. ఇది శాంతి, దృష్టి మరియు సానుకూల శక్తిని తెచ్చే ఆధ్యాత్మిక సాధన. సాంప్రదాయకంగా చేతితో చేసే మీరు ఇప్పుడు రామ కోటిని డిజిటల్‌గా వ్రాయవచ్చు, వేగంగా మరియు సులభంగా.</p>
+    <label for="insertText"><b>Rama Koti Phrase</b></label>
+    <textarea id="insertText" rows="3" aria-label="Rama Koti Phrase">JAI SRI RAM| జై శ్రీ రామ్| जय श्री रामः</textarea>
+    
     <div id="buttonsBar" aria-label="Controls">
-      <button id="startBtn" title="Insert 1 crore entries in batches">Start Insert 1 Crore</button>
-      <button id="cancelBtn" title="Cancel current insertion" style="display:none;">Cancel</button>
-      <button id="deleteDbBtn" title="Delete IndexedDB database">Delete Database</button>
-      <button id="exportBtn" title="Export Rama Koti data">Export Data</button>
-      <progress id="progressBar" max="100" value="0"></progress>
+      <button id="startBtn" title="Insert 1 crore entries">Start Insert</button>
+      <button id="cancelBtn" title="Cancel insertion" style="display:none;">Cancel</button>
+      <button id="deleteBtn" title="Delete database">Delete Database</button>
+      <button id="exportBtn" title="Export data">Export Data</button>
+      <progress id="progressBar" max="100" value="0" aria-label="Insertion progress"></progress>
     </div>
     <p id="status" aria-live="polite" aria-atomic="true">Status: Ready</p>
-    <p id="totalTime"></p>
-    <div id="logDiv" aria-live="polite" aria-label="Insertion Logs" tabindex="0"></div>
+    <p id="totalTime" aria-live="polite" aria-atomic="true"></p>
+    <div id="logDiv" aria-live="polite" aria-atomic="true" tabindex="0" style="max-height:120px; overflow:auto;"></div>
+
     <div id="paginationBar" aria-label="Pagination">
-      <button id="firstPageBtn" disabled aria-label="First Page">« First</button>
-      <button id="prevPageBtn" disabled aria-label="Previous Page">‹ Prev</button>
+      <button id="firstPage" disabled aria-label="First page">« First</button>
+      <button id="prevPage" disabled aria-label="Previous page">‹ Prev</button>
       <span id="pageInfo" aria-live="polite" aria-atomic="true">Page 0 / 0</span>
-      <button id="nextPageBtn" disabled aria-label="Next Page">Next ›</button>
-      <button id="lastPageBtn" disabled aria-label="Last Page">Last »</button>
+      <button id="nextPage" disabled aria-label="Next page">Next ›</button>
+      <button id="lastPage" disabled aria-label="Last page">Last »</button>
     </div>
-    <div id="dataContainer" aria-live="polite" aria-label="Entries" tabindex="0"></div>
+
+    <div id="dataContainer" aria-live="polite" aria-atomic="true" tabindex="0" style="max-height: 250px; overflow:auto;"></div>
   </section>
 
+  <!-- Tools Section -->
   <section id="toolsPage" role="region" aria-live="polite" aria-atomic="true" tabindex="0" hidden>
     <h2>Tools Used</h2>
-    <p>రామాయ రామభద్రాయ రామచంద్రాయ వేధసే .రఘునాథాయ నాథాయ సితాయః పతయే నమః</p>
+    <p>...</p>
     <ul>
-      <li>IndexedDB for offline local storage</li>
-      <li>Web Workers for smooth background processing</li>
-      <li>Service Worker (PWA features)</li>
-      <li>Modern web technologies: HTML5, CSS3, JavaScript ES6+</li>
-      <li>AI-assisted tools for efficient development</li>
+      <li>IndexedDB for offline storage</li>
+      <li>Web Workers</li>
+      <li>Service Worker (PWA)</li>
+      <li>Modern Web tech (HTML5, CSS3, JS)</li>
+      <li>AI-assisted tools</li>
     </ul>
   </section>
 
-  <div id="toast" aria-live="polite" aria-atomic="true" class="toast"></div>
-  <button id="goTopBtn" aria-label="Scroll to top of page" role="button" tabindex="0">↑</button>
+  <!-- Toast Notification -->
+  <div id="toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true"></div>
 
-  <footer id="footer">
-    <p>© 2025 Sandeep Miriyala - Developed with the help of AI tools</p>
+  <!-- Scroll to Top Button -->
+  <button id="goTop" aria-label="Scroll to top" role="button" tabindex="0" style="display:none;">
+    <img src="icon-192.png" alt="Go to top" class="goTopImage" style="width:48px; height:48px;"/>
+  </button>
+
+  <!-- Footer -->
+  <footer id="footer" role="contentinfo" aria-label="Footer">
+    <p>© 2025 Sandeep Miriyala - Developed with AI assistance</p>
   </footer>
 
   <script src="main.js" defer></script>
   <script>
-    // PWA install popup logic for Android/Chromium desktop/iOS
-    let deferredPrompt = null;
-    const menuInstallAppBtn = document.getElementById('menuInstallApp');
-    const installPopup = document.getElementById('installPopup');
-    const installPopupBtn = document.getElementById('installPopupBtn');
-    const closeInstallPopup = document.getElementById('closeInstallPopup');
-    const installText = document.getElementById('installText');
+    // PWA Install Prompt control (existing, with new logic to hide if already installed)
+    (function(){
+      const menuInstallBtn = document.getElementById("menuInstall");
+      const installPopup = document.getElementById("installPopup");
+      const installPopupBtn = document.getElementById("installPopupBtn");
+      const installPopupClose = document.getElementById("closeInstallPopup");
+      const installText = document.getElementById("installText");
+      let deferredPrompt;
 
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      if (menuInstallAppBtn) menuInstallAppBtn.style.display = 'inline-block';
-    });
-
-    menuInstallAppBtn.addEventListener('click', () => {
-      if (window.matchMedia('(display-mode: standalone)').matches) return;
-      installPopup.classList.add('active');
-      if (deferredPrompt) {
-        installText.textContent = 'Install this app for a better experience.';
-        installPopupBtn.style.display = '';
-      } else if (/iphone|ipad|ipod/i.test(navigator.userAgent)) {
-        installText.innerHTML = "On iPhone/iPad, tap <img alt='Share' style='height:1em; vertical-align:middle;' src='data:image/svg+xml;utf8,<svg width='24' height='24' fill='%23fff' xmlns='http://www.w3.org/2000/svg'><path d='M12 16.75c-.41 0-.75-.34-.75-.75V8.81l-2.18 2.2a.75.75 0 1 1-1.06-1.06l3.47-3.47a.75.75 0 0 1 1.06 0l3.47 3.47a.75.75 0 0 1-1.06 1.06L12.75 8.81v7.19c0 .41-.34.75-.75.75z'/><path d='M18.25 18.25h-12a.75.75 0 0 1-.75-.75v-7a.75.75 0 0 1 1.5 0v6.25h10.5V10.5a.75.75 0 0 1 1.5 0v7c0 .41-.34.75-.75.75z'/></svg>'> Share, then “Add to Home Screen.”";
-        installPopupBtn.style.display = 'none';
-      } else {
-        installText.textContent = "On desktop, click your browser's install button in the address bar (or this popup if enabled).";
-        installPopupBtn.style.display = 'none';
+      // Detect if app is already installed (iOS & others)
+      function isAppInstalled() {
+        return (window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
       }
-    });
 
-    installPopupBtn.addEventListener('click', async () => {
-      if (!deferredPrompt) return;
-      installPopup.classList.remove('active');
-      deferredPrompt.prompt();
-      await deferredPrompt.userChoice;
-      deferredPrompt = null;
-      menuInstallAppBtn.style.display = 'none';
-    });
+      window.addEventListener('load', () => {
+        if (isAppInstalled()) {
+          if(menuInstallBtn) menuInstallBtn.style.display = 'none';
+        }
+      });
 
-    closeInstallPopup.addEventListener('click', () => {
-      installPopup.classList.remove('active');
-    });
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        if (menuInstallBtn && !isAppInstalled()) {
+          menuInstallBtn.style.display = 'inline-block';
+        }
+      });
 
-    document.addEventListener('click', (e) => {
-      if (installPopup.classList.contains('active') && !installPopup.contains(e.target) && e.target !== menuInstallAppBtn) {
-        installPopup.classList.remove('active');
+      if (menuInstallBtn) {
+        menuInstallBtn.addEventListener('click', () => {
+          if(isAppInstalled()){
+            menuInstallBtn.style.display = 'none';
+            return;
+          }
+          installPopup.classList.add('active');
+          if (deferredPrompt) {
+            installText.textContent = 'Install this app for a better experience.';
+            installPopupBtn.style.display = 'inline-block';
+          } else if (/iphone|ipad|ipod/i.test(navigator.userAgent)) {
+            installText.innerHTML = 'On iPhone/iPad, tap the Share icon and then "Add to Home Screen".';
+            installPopupBtn.style.display = 'none';
+          } else {
+            installText.textContent = "Use your browser menu's 'Add to Home Screen'";
+            installPopupBtn.style.display = 'none';
+          }
+        });
       }
-    });
 
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js')
-        .then(() => console.log('Service Worker registered'))
-        .catch(e => console.error('Service Worker registration failed:', e));
-    }
+      if (installPopupBtn) {
+        installPopupBtn.addEventListener('click', async () => {
+          if (!deferredPrompt) return;
+          installPopup.classList.remove('active');
+          deferredPrompt.prompt();
+          const choiceResult = await deferredPrompt.userChoice;
+          if(choiceResult.outcome === 'accepted' && menuInstallBtn){
+            menuInstallBtn.style.display = 'none';
+          }
+          deferredPrompt = null;
+        });
+      }
+
+      if (installPopupClose) {
+        installPopupClose.addEventListener('click', () => {
+          installPopup.classList.remove('active');
+        });
+      }
+
+      document.addEventListener('click', (event) => {
+        if(installPopup.classList.contains('active') && !installPopup.contains(event.target) && event.target !== menuInstallBtn){
+          installPopup.classList.remove('active');
+        }
+      });
+
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').then(() => {
+          console.log('Service Worker registered');
+        }).catch((err) => {
+          console.error('Service Worker registration failed:', err);
+        });
+      }
+    })();
   </script>
+
 </body>
 </html>
