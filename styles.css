@@ -11,6 +11,7 @@
   --error-color: #d9534f;
 }
 
+/* Body and layout */
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   max-width: 900px;
@@ -57,6 +58,7 @@ h2, h3 {
   transition: background-color 0.3s ease;
   min-width: 120px;
   user-select: none;
+  user-drag: none;
 }
 
 #menuBar button:hover:not(:disabled) {
@@ -69,7 +71,7 @@ h2, h3 {
   opacity: 0.7;
 }
 
-/* Section styling */
+/* Sections */
 section {
   max-width: 900px;
   background-color: #f1f8ff;
@@ -82,8 +84,9 @@ section {
   color: var(--text-color);
 }
 
+/* Show About by default */
 #aboutPage {
-  display: block; /* Show About page initially */
+  display: block;
 }
 
 #insertPage,
@@ -114,13 +117,18 @@ button {
   font-weight: 600;
   cursor: pointer;
   box-shadow: 0 4px 8px rgba(23,105,170,0.4);
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, transform 0.1s ease;
   min-width: 110px;
   user-select: none;
+  user-drag: none;
 }
 
 button:hover:not(:disabled) {
   background-color: var(--primary-hover);
+}
+
+button:active {
+  transform: scale(0.95);
 }
 
 button:disabled {
@@ -144,7 +152,7 @@ button.working {
   color: var(--primary-color);
 }
 
-/* Total Time Display */
+/* Total Time */
 #totalTime {
   font-weight: 700;
   text-align: center;
@@ -152,7 +160,7 @@ button.working {
   margin-top: 4px;
 }
 
-/* Log display */
+/* Log display with fade-in for new entries */
 #logDiv {
   background: var(--log-bg);
   padding: 10px;
@@ -166,6 +174,18 @@ button.working {
   border: 1px solid #ccc;
   user-select: text;
   color: var(--text-color);
+}
+
+#logDiv div {
+  opacity: 0;
+  animation: fadeIn 0.6s forwards;
+  margin-bottom: 2px;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
 }
 
 /* Data container */
@@ -253,6 +273,7 @@ progress#progressBar {
   overflow: hidden;
   margin: 15px auto;
   background-color: #ddd;
+  transition: width 0.3s ease;
 }
 
 progress#progressBar::-webkit-progress-bar {
@@ -272,44 +293,71 @@ progress#progressBar::-moz-progress-bar {
   transition: width 0.3s ease;
 }
 
-/* Install prompt banner */
+/* Install prompt banner with fade-and-slide */
 #installBanner {
   position: fixed;
-  top: 15px;
-  right: 15px;
+  bottom: 20px;
+  right: 20px;
   background: var(--primary-color);
   color: white;
-  padding: 10px 18px;
-  border-radius: 30px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-  display: flex;
+  padding: 10px 14px;
+  border-radius: 24px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  display: none;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   font-weight: 600;
-  font-size: 14px;
-  max-width: 280px;
+  font-size: 13px;
   user-select: none;
   z-index: 10000;
+  flex-wrap: nowrap;
+  box-sizing: border-box;
+
+  /* Animation */
+  opacity: 0;
+  transform: translateY(25px);
+  pointer-events: none;
+  transition:
+    opacity 0.4s ease,
+    transform 0.4s ease;
 }
 
-#installBanner span {
-  flex: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+#installBanner.visible {
+  display: flex;
+  opacity: 0.95;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+@media (max-width: 600px) {
+  #installBanner {
+    left: 20px;
+    right: 20px;
+    bottom: 15px;
+    flex-wrap: wrap;
+    font-size: 14px;
+    padding: 12px 16px;
+    max-width: unset;
+  }
+  #installBanner span {
+    flex-basis: 100%;
+    margin-bottom: 8px;
+  }
 }
 
 #installBanner button {
   background: white;
   color: var(--primary-color);
   border: none;
-  border-radius: 20px;
-  padding: 6px 14px;
+  border-radius: 18px;
+  padding: 6px 12px;
   font-weight: 700;
   cursor: pointer;
-  min-width: auto;
-  transition: background-color 0.3s ease;
+  min-width: 48px;
   user-select: none;
+  transition: background-color 0.3s ease;
+  font-size: 13px;
+  user-drag: none;
 }
 
 #installBanner button:hover {
@@ -319,6 +367,10 @@ progress#progressBar::-moz-progress-bar {
 #installBanner button.dismissBtn {
   background: var(--error-color);
   color: white;
+  min-width: 36px;
+  padding: 6px 10px;
+  font-size: 16px;
+  user-drag: none;
 }
 
 #installBanner button.dismissBtn:hover {
@@ -341,15 +393,15 @@ progress#progressBar::-moz-progress-bar {
   z-index: 10001;
   display: none;
   user-select: none;
+  user-drag: none;
 }
 
-/* Scroll to top button */
+/* Scroll to top button with fade & scale */
 #goTopBtn {
-  display: none;
+  display: block; /* keep block to avoid layout shift */
   position: fixed;
-  top: 50%;
+  bottom: 30px;
   right: 30px;
-  transform: translateY(-50%);
   padding: 14px 20px;
   font-size: 24px;
   font-weight: 700;
@@ -359,9 +411,22 @@ progress#progressBar::-moz-progress-bar {
   border-radius: 50px;
   cursor: pointer;
   box-shadow: 0 6px 18px rgba(23,105,170,0.7);
-  z-index: 9999;
+  z-index: 10000;
   user-select: none;
-  transition: background-color 0.3s ease;
+  user-drag: none;
+
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.85);
+  transition:
+    opacity 0.4s ease,
+    transform 0.3s ease;
+}
+
+#goTopBtn.visible {
+  opacity: 0.9;
+  pointer-events: auto;
+  transform: scale(1);
 }
 
 #goTopBtn:hover,
@@ -369,6 +434,27 @@ progress#progressBar::-moz-progress-bar {
   background-color: var(--primary-hover);
   outline: none;
   box-shadow: 0 0 8px 3px #ffbf47;
+  transform: scale(1.1);
+  transition: transform 0.2s ease;
+}
+
+/* Adjust scroll button on small screens */
+@media (max-width: 768px) {
+  #goTopBtn {
+    right: 20px;
+    bottom: 20px;
+    padding: 12px 18px;
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 400px) {
+  #goTopBtn {
+    right: 15px;
+    bottom: 15px;
+    padding: 10px 16px;
+    font-size: 18px;
+  }
 }
 
 /* Footer */
@@ -381,6 +467,7 @@ progress#progressBar::-moz-progress-bar {
   color: #666;
   background-color: var(--background-color);
   user-select: none;
+  user-drag: none;
 }
 
 #footer p {
@@ -388,7 +475,7 @@ progress#progressBar::-moz-progress-bar {
   font-weight: 500;
 }
 
-/* Animated ellipsis */
+/* Animated ellipsis for loading spinner */
 @keyframes ellipsis {
   to {
     width: 2.5em;
@@ -404,7 +491,7 @@ progress#progressBar::-moz-progress-bar {
   width: 0;
 }
 
-/* Responsive */
+/* Responsive adjustments */
 @media (max-width: 600px) {
   body {
     padding: 15px;
@@ -476,10 +563,12 @@ progress#progressBar::-moz-progress-bar {
   width: 8px;
   height: 8px;
 }
+
 ::-webkit-scrollbar-thumb {
   background: var(--primary-color);
   border-radius: 4px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: var(--primary-hover);
 }

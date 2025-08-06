@@ -6,7 +6,6 @@ const TOTAL_ENTRIES = 10000000; // 1 crore
 const BATCH_SIZE = 100000;
 const PAGE_SIZE = 5000;
 
-
 // ===== State variables =====
 let db;
 let worker;
@@ -35,7 +34,6 @@ const goTopBtn = document.getElementById('goTopBtn');
 const insertTextInput = document.getElementById('insertText');
 const exportBtn = document.getElementById('exportBtn');
 
-// Menu buttons and page sections
 const menuAbout = document.getElementById('menuAbout');
 const menuInsert = document.getElementById('menuInsert');
 const menuTools = document.getElementById('menuTools');
@@ -45,9 +43,6 @@ const insertPage = document.getElementById('insertPage');
 const toolsPage = document.getElementById('toolsPage');
 
 // ===== Utility Functions =====
-startBtn.onclick = () => {
-  if (!isInserting) startInsertion();
-};
 
 function openDB() {
   return new Promise((resolve, reject) => {
@@ -60,14 +55,21 @@ function openDB() {
     };
     request.onsuccess = e => {
       db = e.target.result;
-      resolve(db);
+      resolve();
     };
     request.onerror = e => reject(e.target.error);
   });
 }
 
+// Updated log function for fade-in new lines
 function log(text) {
-  logDiv.textContent += text + '\n';
+  const div = document.createElement('div');
+  div.textContent = text;
+  div.style.opacity = '0';
+  logDiv.appendChild(div);
+  requestAnimationFrame(() => {
+    div.style.opacity = '1';
+  });
   logDiv.scrollTop = logDiv.scrollHeight;
 }
 
@@ -91,10 +93,10 @@ function formatDuration(ms) {
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
 
-  const hDisplay = hours > 0 ? hours + (hours === 1 ? " hour " : " hours ") : "";
-  const mDisplay = minutes > 0 ? minutes + (minutes === 1 ? " minute " : " minutes ") : "";
-  const sDisplay = seconds > 0 ? seconds + (seconds === 1 ? " second" : " seconds") : "";
-  return (hDisplay + mDisplay + sDisplay).trim() || "0 seconds";
+  const hDisplay = hours > 0 ? hours + (hours === 1 ? ' hour ' : ' hours ') : '';
+  const mDisplay = minutes > 0 ? minutes + (minutes === 1 ? ' minute ' : ' minutes ') : '';
+  const sDisplay = seconds > 0 ? seconds + (seconds === 1 ? ' second' : ' seconds') : '';
+  return (hDisplay + mDisplay + sDisplay).trim() || '0 seconds';
 }
 
 function updatePaginationButtons() {
@@ -108,17 +110,16 @@ function updatePaginationButtons() {
 function loadPage(page) {
   container.innerHTML = '';
   const startId = page * PAGE_SIZE + 1;
-
   const maxId = Math.min(batchInsertedCount, TOTAL_ENTRIES);
+
   if (startId > maxId) {
-    container.innerHTML = `<p style="text-align:center; color:#666;">More entries will appear here soon&hellip;</p>`;
-    updateStatus(`Page ${page + 1} not yet available. Please wait for insertion to progress.`);
+    container.innerHTML = `<p style="text-align:center; color:#666;">More entries will appear later&hellip;</p>`;
+    updateStatus(`Page ${page + 1} not yet available. Please wait for insertion.`);
     updatePaginationButtons();
     return;
   }
 
   const endId = Math.min(startId + PAGE_SIZE - 1, maxId);
-
   updateStatus(`Loading page ${page + 1} of ${totalPages} (IDs ${startId.toLocaleString()} - ${endId.toLocaleString()})...`);
 
   const txn = db.transaction(STORE_NAME, 'readonly');
@@ -147,7 +148,7 @@ function loadPage(page) {
   };
 }
 
-// ===== Pagination handlers =====
+// Pagination handlers
 firstPageBtn.onclick = () => {
   if (currentPage !== 0) {
     currentPage = 0;
@@ -177,13 +178,13 @@ lastPageBtn.onclick = () => {
   }
 };
 
-// Insert button state handler
 function setInsertState(state) {
   if (state === 'ready') {
     startBtn.disabled = false;
     startBtn.textContent = 'Start Insert 1 Crore';
     startBtn.classList.remove('working');
     cancelBtn.style.display = 'none';
+    cancelBtn.disabled = false;
     progressBar.style.display = 'none';
     totalTimeP.textContent = '';
   } else if (state === 'inserting') {
@@ -202,9 +203,13 @@ function setInsertState(state) {
   }
 }
 
-// Start insertion function
+startBtn.onclick = () => {
+  if (!isInserting) startInsertion();
+};
+
 function startInsertion() {
   if (worker) worker.terminate();
+
   logDiv.textContent = '';
   updateStatus('Starting insertion in background...', true);
   setInsertState('inserting');
@@ -214,9 +219,9 @@ function startInsertion() {
   progressBar.value = 0;
   insertionStartTime = performance.now();
 
-  const customText = insertTextInput?.value?.trim() || "JAI SRI RAM| జై శ్రీ రామ్  |जय श्री रामः";
+  const customText = insertTextInput?.value?.trim() || 'JAI SRI RAM| జై శ్రీ రామ్  |जय श्री रामः';
 
-  worker = new Worker('SriramaInsert.js');
+  worker = new Worker('insertWorker.js');
   worker.postMessage({ DB_NAME, STORE_NAME, DB_VERSION, TOTAL_ENTRIES, BATCH_SIZE, customText });
 
   worker.onmessage = e => {
@@ -235,11 +240,9 @@ function startInsertion() {
 
       progressBar.value = Math.min(100, (batchInsertedCount / TOTAL_ENTRIES) * 100);
 
-      // Automatically show data every 1 lakh inserted records
       if (batchInsertedCount % 100000 === 0 || batchInsertedCount === TOTAL_ENTRIES) {
         const pageToLoad = Math.floor((batchInsertedCount - 1) / PAGE_SIZE);
         totalPages = Math.ceil(Math.max(batchInsertedCount, TOTAL_ENTRIES) / PAGE_SIZE);
-
         currentPage = pageToLoad;
         loadPage(currentPage);
         updatePaginationButtons();
@@ -257,6 +260,12 @@ function startInsertion() {
       setInsertState('done');
       isInserting = false;
       cancelRequested = false;
+
+      // Optional confetti
+      if (typeof confetti === 'function') {
+        confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+      }
+
       deleteDbBtn.disabled = false;
     }
   };
@@ -270,14 +279,16 @@ function startInsertion() {
   };
 }
 
-// Cancel insertion button
-cancelBtn.onclick = async () => {
+// Cancel insertion handler
+cancelBtn.onclick = () => {
   if (!isInserting) return;
   cancelBtn.disabled = true;
+
   if (worker) {
     worker.terminate();
     worker = null;
   }
+
   cancelRequested = true;
   updateStatus('Cancelling… Please wait.');
   log('❌ User cancelled insertion.');
@@ -286,7 +297,7 @@ cancelBtn.onclick = async () => {
     if (db) db.close();
     const deleteRequest = indexedDB.deleteDatabase(DB_NAME);
     deleteRequest.onsuccess = () => {
-      log('✅ Database deleted successfully after cancellation.');
+      log('✅ Database deleted after cancellation.');
       updateStatus('Insertion cancelled. Database cleared.');
       logDiv.textContent = '';
       container.innerHTML = '';
@@ -295,11 +306,11 @@ cancelBtn.onclick = async () => {
       updatePaginationButtons();
       deleteDbBtn.disabled = true;
       setInsertState('ready');
-      isInserting = false;
       cancelBtn.style.display = 'none';
       cancelBtn.disabled = false;
       progressBar.style.display = 'none';
       totalTimeP.textContent = '';
+      isInserting = false;
     };
     deleteRequest.onerror = () => {
       log('❌ Database deletion failed after cancellation.');
@@ -311,17 +322,18 @@ cancelBtn.onclick = async () => {
     updateStatus('Error during cancellation.');
     cancelBtn.disabled = false;
   }
+
   if ('caches' in window) {
-    caches.keys().then(names => names.forEach(name => caches.delete(name)));
+    caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))));
     log('🧹 Cache cleared after cancellation.');
   }
 };
 
 // Delete database button
-deleteDbBtn.onclick = async () => {
+deleteDbBtn.onclick = () => {
   deleteDbBtn.disabled = true;
   updateStatus('Deleting database... Please wait.');
-  log('🗑️ User initiated immediate database deletion.');
+  log('🗑️ Delete requested.');
 
   try {
     if (worker) {
@@ -330,12 +342,13 @@ deleteDbBtn.onclick = async () => {
       isInserting = false;
       cancelRequested = false;
     }
+
     if (db) db.close();
 
     const deleteRequest = indexedDB.deleteDatabase(DB_NAME);
     deleteRequest.onsuccess = () => {
-      log('✅ Database deleted successfully.');
-      updateStatus('Database deleted successfully.');
+      log('✅ Database deleted.');
+      updateStatus('Database deleted.');
       logDiv.textContent = '';
       container.innerHTML = '';
       currentPage = 0;
@@ -355,23 +368,23 @@ deleteDbBtn.onclick = async () => {
       deleteDbBtn.disabled = false;
     };
     deleteRequest.onblocked = () => {
-      log('⚠️ Database deletion blocked - please close other tabs.');
-      updateStatus('Database deletion blocked. Close other tabs and try again.');
+      log('⚠️ Deletion blocked. Close other tabs.');
+      updateStatus('Deletion blocked. Close other tabs.');
       deleteDbBtn.disabled = false;
     };
 
     if ('caches' in window) {
-      caches.keys().then(names => names.forEach(name => caches.delete(name)));
-      log('🧹 Cache cleared after database deletion.');
+      caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))));
+      log('🧹 Cache cleared after deletion.');
     }
   } catch (err) {
-    log(`❌ Exception during database deletion: ${err}`);
-    updateStatus('Error during database deletion.');
+    log(`❌ Exception during deletion: ${err}`);
+    updateStatus('Error during deletion.');
     deleteDbBtn.disabled = false;
   }
 };
 
-// Export data button
+// Export button handler
 exportBtn?.addEventListener('click', async () => {
   if (!db) {
     alert('Database not open.');
@@ -392,7 +405,7 @@ exportBtn?.addEventListener('click', async () => {
           resolve();
         }
       };
-      store.openCursor().onerror = event => reject(event.target.error);
+      store.openCursor().onerror = e => reject(e.target.error);
     });
 
     const blob = new Blob([JSON.stringify(items, null, 2)], { type: 'application/json' });
@@ -423,7 +436,7 @@ menuAbout.onclick = () => showSection('about');
 menuInsert.onclick = () => showSection('insert');
 menuTools.onclick = () => showSection('tools');
 
-// Accessibility for scroll to top button
+// Accessibility: live region for screen readers
 const liveRegion = document.createElement('div');
 liveRegion.setAttribute('aria-live', 'polite');
 liveRegion.style.position = 'absolute';
@@ -433,20 +446,22 @@ liveRegion.style.width = '1px';
 liveRegion.style.overflow = 'hidden';
 document.body.appendChild(liveRegion);
 
+// Scroll-to-top button visibility toggle
 window.addEventListener('scroll', () => {
   if (window.pageYOffset > 300) {
-    goTopBtn.style.display = 'block';
+    goTopBtn.classList.add('visible');
   } else {
-    goTopBtn.style.display = 'none';
+    goTopBtn.classList.remove('visible');
   }
 });
 
+// Scroll-to-top button click smooth scroll
 goTopBtn.addEventListener('click', () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
   liveRegion.textContent = 'Scrolled to top';
 });
 
-// On page load
+// Initialize app on page load
 window.onload = async () => {
   showSection('about');
 
@@ -491,7 +506,6 @@ window.onload = async () => {
       lastPageBtn.disabled = true;
       progressBar.style.display = 'none';
     };
-
   } catch {
     deleteDbBtn.disabled = true;
     firstPageBtn.disabled = true;
