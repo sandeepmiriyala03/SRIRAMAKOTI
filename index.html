@@ -4,51 +4,29 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Sri Rama Koti</title>
-
-  <!-- PWA Manifest -->
   <link rel="manifest" href="manifest.json" />
-
-  <!-- Main stylesheet -->
   <link rel="stylesheet" href="styles.css" />
-
-  <!-- App icon -->
   <link rel="icon" href="icon-192.png" type="image/x-icon" />
 </head>
 <body>
 
-  <!-- PWA Install Banner -->
-  <div
-    id="installBanner"
-    role="dialog"
-    aria-live="polite"
-    aria-atomic="true"
-    aria-label="Install app prompt"
-    class="install-banner"
-    style="display:none;"
-  >
-    <span>Install Sri Rama Koti app for offline use</span>
-    <button id="installBtn" aria-label="Install application">Install</button>
-    <button id="dismissInstallBtn" aria-label="Dismiss install prompt">✕</button>
-  </div>
-
-  <!-- Main Heading -->
   <h1>🕉 Sri Rama Koti</h1>
-
-  <!-- Navigation Menu -->
   <nav id="menuBar" aria-label="Main menu">
+    <img src="icon-512.png" alt="Sri Rama Koti icon" class="menuIcon" />
     <button id="menuAbout" disabled>About Rama</button>
     <button id="menuInsert">Write RamaKoti</button>
     <button id="menuTools">Tools Used</button>
+    <button id="menuInstallApp" style="display:none;">Install App</button>
   </nav>
 
-  <!-- About Page -->
-  <section
-    id="aboutPage"
-    role="region"
-    aria-live="polite"
-    aria-atomic="true"
-    tabindex="0"
-  >
+  <!-- Slide-in Install Popup -->
+  <div id="installPopup" class="install-popup" role="dialog" aria-live="polite" aria-label="Install application prompt">
+    <span id="installText">Install this app for a better experience.</span>
+    <button id="installPopupBtn" aria-label="Install Application">Install</button>
+    <button class="close-popup" id="closeInstallPopup" aria-label="Close install prompt">✕</button>
+  </div>
+
+  <section id="aboutPage" role="region" aria-live="polite" aria-atomic="true" tabindex="0">
     <h2>About Sri Rama</h2>
     <p>రామాయ రామభద్రాయ రామచంద్రాయ వేధసే .రఘునాథాయ నాథాయ సితాయః పతయే నమః</p>
     <p>Lord Sri Rama is the seventh avatar of Vishnu, known for his righteousness and virtue.</p>
@@ -64,168 +42,124 @@
         This sacred act promotes concentration, inner peace, and connection to divine blessings.
       </p>
       <p>
-        Traditionally, it is done by hand, but now also embraced digitally, making this powerful spiritual exercise accessible anytime and anywhere.
+        Traditionally, it’s done by hand, but now also embraced digitally, making this powerful spiritual exercise accessible anytime and anywhere.
       </p>
       <p style="font-style: italic; color: #555;">
         "Repetition of Rama's name is believed to open the door to divine grace and eternal bliss."
       </p>
       <p>
-        To perform Rama Koti, simply click the 'Insert 1 Crore Rama Koti' button and 1 crore Ramakoti entries will be digitally inserted and stored on your mobile device.
+        To perform Rama Koti, simply click the 'Insert 1 Crore Rama Koti' button and 1 crore Rama Koti entries will be digitally inserted and stored on your device.
       </p>
     </div>
   </section>
 
-  <!-- Insert Page -->
-  <section
-    id="insertPage"
-    role="region"
-    aria-live="polite"
-    aria-atomic="true"
-    tabindex="0"
-    style="display:none;"
-  >
+  <section id="insertPage" role="region" aria-live="polite" aria-atomic="true" tabindex="0" hidden>
     <h2>RAMA KOTI - Write 1 Crore Times</h2>
     <p>
-      Writing Rama Koti means writing the name of Lord Rama one crore (10 million) times.
-      It is a powerful spiritual practice that brings peace, focus, and positive energy. Traditionally done by hand, you can now write Rama Koti digitally, making it faster and easier while preserving the same blessings.
-      Simply start the process and let your device help you complete this sacred journey.
+      Writing Rama Koti means writing Lord Rama’s name one crore (10 million) times. It is a powerful spiritual practice that brings peace, focus, and positive energy. Traditionally done by hand, now you can write Rama Koti digitally, making it faster and easier while preserving the same blessings. Simply start the process and let your device help you complete this sacred journey.
     </p>
     <p>
       రామ కోటి రాయడం అంటే రాముడి నామాన్ని కోటి (10 మిలియన్) సార్లు రాయడం.
-      ఇది శాంతి, దృష్టి మరియు సానుకూల శక్తిని తెచ్చే శక్తివంతమైన ఆధ్యాత్మిక సాధన.
-      సాంప్రదాయకంగా చేతితో చేసే మీరు ఇప్పుడు రామ కోటిని డిజిటల్‌గా వ్రాయవచ్చు, అదే ఆశీర్వాదాలను కాపాడుకుంటూ దీన్ని వేగంగా మరియు సులభంగా చేయవచ్చు.
-      ప్రక్రియను ప్రారంభించండి మరియు ఈ పవిత్ర ప్రయాణాన్ని పూర్తి చేయడంలో మీ పరికరం మీకు సహాయం చేసనివ్వండి.
+      ఇది శాంతి, దృష్టి మరియు సానుకూల శక్తిని తెచ్చే ఆధ్యాత్మిక సాధన.
+      సాంప్రదాయకంగా చేతితో చేసే మీరు ఇప్పుడు రామ కోటిని డిజిటల్‌గా వ్రాయవచ్చు, వేగంగా మరియు సులభంగా.
     </p>
+    <label for="insertText"><b>Rama Koti Phrase:</b></label>
+    <textarea id="insertText" rows="3">JAI SRI RAM| జై శ్రీ రామ్  |जय श्री रामः</textarea>
 
-    <label for="insertText" style="font-weight: 600;">Rama Koti Phrase:</label>
-    <input
-      type="text"
-      id="insertText"
-      value="JAI SRI RAM| జై శ్రీ రామ్  |जय श्री रामः"
-      style="width: 100%; padding: 8px; margin: 6px 0 12px;"
-    />
-
-    <div id="buttonsBar" aria-label="Controls" style="text-align:center; margin: 20px 0;">
+    <div id="buttonsBar" aria-label="Controls">
       <button id="startBtn" title="Insert 1 crore entries in batches">Start Insert 1 Crore</button>
-      <button id="cancelBtn" title="Cancel current insertion" style="display:none; background:#e67e22; color:#fff; margin-left:10px;">Cancel</button>
-      <button id="deleteDbBtn" title="Delete IndexedDB database" style="background:#d9534f; margin-left:10px;">Delete Database</button>
-      <button id="exportBtn" title="Export Rama Koti data" style="background:#4caf50; margin-left:10px;">Export Data</button>
-      <progress id="progressBar" max="100" value="0" style="width: 80%; height: 20px; margin: 10px auto; display: none;"></progress>
+      <button id="cancelBtn" title="Cancel current insertion" style="display:none;">Cancel</button>
+      <button id="deleteDbBtn" title="Delete IndexedDB database">Delete Database</button>
+      <button id="exportBtn" title="Export Rama Koti data">Export Data</button>
+      <progress id="progressBar" max="100" value="0"></progress>
     </div>
-
-    <p id="status" aria-live="polite" aria-atomic="true" style="margin-top: 10px;">Status: Ready</p>
-    <p id="totalTime" style="font-weight:600; margin-top:8px; user-select:none;"></p>
-
-    <div
-      id="logDiv"
-      aria-live="polite"
-      aria-label="Insertion Logs"
-      tabindex="0"
-      style="white-space: pre-line; max-height: 140px; overflow-y: auto; background: #eee; border-radius: 6px; padding: 10px; border: 1px solid #ccc; font-family: monospace; font-size: 13px;"
-    ></div>
-
-    <div id="paginationBar" style="margin-top: 20px; text-align: center; user-select:none;">
-      <button id="firstPageBtn" disabled aria-label="First Page" style="min-width: 80px; margin: 3px 6px; padding: 8px 16px;">« First</button>
-      <button id="prevPageBtn" disabled aria-label="Previous Page" style="min-width: 80px; margin: 3px 6px; padding: 8px 16px;">‹ Prev</button>
-      <span id="pageInfo" aria-live="polite" aria-atomic="true" style="margin: 0 12px; font-weight: 600;">Page 0 / 0</span>
-      <button id="nextPageBtn" disabled aria-label="Next Page" style="min-width: 80px; margin: 3px 6px; padding: 8px 16px;">Next ›</button>
-      <button id="lastPageBtn" disabled aria-label="Last Page" style="min-width: 80px; margin: 3px 6px; padding: 8px 16px;">Last »</button>
+    <p id="status" aria-live="polite" aria-atomic="true">Status: Ready</p>
+    <p id="totalTime"></p>
+    <div id="logDiv" aria-live="polite" aria-label="Insertion Logs" tabindex="0"></div>
+    <div id="paginationBar" aria-label="Pagination">
+      <button id="firstPageBtn" disabled aria-label="First Page">« First</button>
+      <button id="prevPageBtn" disabled aria-label="Previous Page">‹ Prev</button>
+      <span id="pageInfo" aria-live="polite" aria-atomic="true">Page 0 / 0</span>
+      <button id="nextPageBtn" disabled aria-label="Next Page">Next ›</button>
+      <button id="lastPageBtn" disabled aria-label="Last Page">Last »</button>
     </div>
-
-    <div
-      id="dataContainer"
-      aria-live="polite"
-      aria-label="Entries"
-      tabindex="0"
-      style="margin-top: 20px; max-height: 400px; overflow-y: auto; background: #fff; border-radius: 8px; padding: 15px; box-shadow: 0 0 15px rgba(0,0,0,0.1); border: 1px solid #ddd; font-size: 15px; color: #1769aa;"
-    ></div>
+    <div id="dataContainer" aria-live="polite" aria-label="Entries" tabindex="0"></div>
   </section>
 
-  <!-- Tools Used Page -->
-  <section
-    id="toolsPage"
-    role="region"
-    aria-live="polite"
-    aria-atomic="true"
-    tabindex="0"
-    style="max-width: 900px; background-color: #f1f8ff; border-radius: 8px; padding: 20px 25px; margin: auto 20px 20px; display: none;"
-  >
+  <section id="toolsPage" role="region" aria-live="polite" aria-atomic="true" tabindex="0" hidden>
     <h2>Tools Used</h2>
-    <p>రామాయ రామభద్రాయ రామచంద్రాయ వేధసే .రఘునాథాయ నాథాయ సితాయః పతయే నమః</p>  
+    <p>రామాయ రామభద్రాయ రామచంద్రాయ వేధసే .రఘునాథాయ నాథాయ సితాయః పతయే నమః</p>
     <ul>
       <li>IndexedDB for offline local storage</li>
       <li>Web Workers for smooth background processing</li>
-      <li>Service Worker enabling Progressive Web App capabilities</li>
-      <li>Modern web technologies: HTML5, CSS3, and JavaScript ES6+</li>
-      <li>AI-assisted tools for development efficiency</li>
+      <li>Service Worker (PWA features)</li>
+      <li>Modern web technologies: HTML5, CSS3, JavaScript ES6+</li>
+      <li>AI-assisted tools for efficient development</li>
     </ul>
   </section>
 
-  <!-- Toast container -->
-  <div
-    id="toast"
-    aria-live="polite"
-    aria-atomic="true"
-    class="toast"
-    style="display:none; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-      background: #1769aa; color: white; padding: 12px 24px; border-radius: 24px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3); font-weight: 600; opacity: 0.9; z-index: 10001;"
-  ></div>
+  <div id="toast" aria-live="polite" aria-atomic="true" class="toast"></div>
+  <button id="goTopBtn" aria-label="Scroll to top of page" role="button" tabindex="0">↑</button>
 
-  <!-- Scroll to Top Button -->
-  <button
-    id="goTopBtn"
-    aria-label="Scroll to top of page"
-    role="button"
-    tabindex="0"
-    style="display:none; position: fixed; top: 50%; right: 30px; transform: translateY(-50%);
-      padding: 14px 20px; font-size: 24px; font-weight: 700; background-color: #1769aa;
-      color: white; border: none; border-radius: 50px; cursor: pointer;
-      box-shadow: 0 6px 18px rgba(23,105,170,0.7); z-index: 9999;"
-  >↑</button>
-
-  <!-- Footer -->
-  <footer
-    id="footer"
-    style="text-align:center; margin-top: 40px; padding: 20px; border-top: 1px solid #ddd;
-      font-size: 14px; color: #666;"
-  >
+  <footer id="footer">
     <p>© 2025 Sandeep Miriyala - Developed with the help of AI tools</p>
   </footer>
 
-  <!-- Confetti JS for celebration -->
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+  <script src="main.js" defer></script>
+  <script>
+    // PWA install popup logic for Android/Chromium desktop/iOS
+    let deferredPrompt = null;
+    const menuInstallAppBtn = document.getElementById('menuInstallApp');
+    const installPopup = document.getElementById('installPopup');
+    const installPopupBtn = document.getElementById('installPopupBtn');
+    const closeInstallPopup = document.getElementById('closeInstallPopup');
+    const installText = document.getElementById('installText');
 
-  <!-- Main app script -->
-  <script src="./main.js" defer></script>
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      if (menuInstallAppBtn) menuInstallAppBtn.style.display = 'inline-block';
+    });
 
-  <!-- Inline script for PWA install prompt and Service Worker registration -->
-  <script defer>
-    let deferredPrompt;
-const installBanner = document.getElementById('installBanner');
-const installBtn = document.getElementById('installBtn');
-const dismissInstallBtn = document.getElementById('dismissInstallBtn');
+    menuInstallAppBtn.addEventListener('click', () => {
+      if (window.matchMedia('(display-mode: standalone)').matches) return;
+      installPopup.classList.add('active');
+      if (deferredPrompt) {
+        installText.textContent = 'Install this app for a better experience.';
+        installPopupBtn.style.display = '';
+      } else if (/iphone|ipad|ipod/i.test(navigator.userAgent)) {
+        installText.innerHTML = "On iPhone/iPad, tap <img alt='Share' style='height:1em; vertical-align:middle;' src='data:image/svg+xml;utf8,<svg width='24' height='24' fill='%23fff' xmlns='http://www.w3.org/2000/svg'><path d='M12 16.75c-.41 0-.75-.34-.75-.75V8.81l-2.18 2.2a.75.75 0 1 1-1.06-1.06l3.47-3.47a.75.75 0 0 1 1.06 0l3.47 3.47a.75.75 0 0 1-1.06 1.06L12.75 8.81v7.19c0 .41-.34.75-.75.75z'/><path d='M18.25 18.25h-12a.75.75 0 0 1-.75-.75v-7a.75.75 0 0 1 1.5 0v6.25h10.5V10.5a.75.75 0 0 1 1.5 0v7c0 .41-.34.75-.75.75z'/></svg>'> Share, then “Add to Home Screen.”";
+        installPopupBtn.style.display = 'none';
+      } else {
+        installText.textContent = "On desktop, click your browser's install button in the address bar (or this popup if enabled).";
+        installPopupBtn.style.display = 'none';
+      }
+    });
 
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  installBanner.classList.add('visible');
-});
+    installPopupBtn.addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      installPopup.classList.remove('active');
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      menuInstallAppBtn.style.display = 'none';
+    });
 
-installBtn.addEventListener('click', async () => {
-  installBanner.classList.remove('visible');
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-    await deferredPrompt.userChoice;
-    deferredPrompt = null;
-  }
-});
+    closeInstallPopup.addEventListener('click', () => {
+      installPopup.classList.remove('active');
+    });
 
-dismissInstallBtn.addEventListener('click', () => {
-  installBanner.classList.remove('visible');
-  deferredPrompt = null;
-});
+    document.addEventListener('click', (e) => {
+      if (installPopup.classList.contains('active') && !installPopup.contains(e.target) && e.target !== menuInstallAppBtn) {
+        installPopup.classList.remove('active');
+      }
+    });
 
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js')
+        .then(() => console.log('Service Worker registered'))
+        .catch(e => console.error('Service Worker registration failed:', e));
+    }
   </script>
 </body>
 </html>

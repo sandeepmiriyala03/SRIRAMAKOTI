@@ -1,7 +1,7 @@
 {
   "name": "Sri Rama Koti",
   "short_name": "RamaKoti",
-  "start_url": ".",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#f9f9f9",
   "theme_color": "#1769aa",

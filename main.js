@@ -1,120 +1,119 @@
-// ===== Constants =====
+// ===== Constants: All app-wide fixed values =====
 const DB_NAME = 'SriRamaKotiDB';
 const STORE_NAME = 'sriRamaStore';
 const DB_VERSION = 1;
-const TOTAL_ENTRIES = 10000000; // 1 crore
-const BATCH_SIZE = 100000;
-const PAGE_SIZE = 5000;
+const TOTAL_ENTRIES = 10_000_000; // 1 crore entries
+const BATCH_SIZE = 100_000;       // Number of entries inserted per batch
+const PAGE_SIZE = 5_000;          // Entries shown per page
 
-// ===== State variables =====
-let db;
-let worker;
-let currentPage = 0;
-let totalPages = 0;
-let isInserting = false;
-let cancelRequested = false;
-let batchInsertedCount = 0;
-let insertionStartTime;
+// ===== State variables: App's dynamic state =====
+let db;                      // IndexedDB database instance
+let worker;                  // Background Web Worker for insertion
+let currentPage = 0;         // Current page in pagination
+let totalPages = 0;          // Total number of pages
+let isInserting = false;     // Flag indicating insert in progress
+let cancelRequested = false; // Flag for user cancel request
+let batchInsertedCount = 0;  // Total number of entries inserted
+let insertionStartTime = 0;  // Timestamp when insertion started
 
-// ===== DOM Elements =====
-const startBtn = document.getElementById('startBtn');
-const cancelBtn = document.getElementById('cancelBtn');
-const deleteDbBtn = document.getElementById('deleteDbBtn');
-const statusP = document.getElementById('status');
-const totalTimeP = document.getElementById('totalTime');
-const logDiv = document.getElementById('logDiv');
-const container = document.getElementById('dataContainer');
-const progressBar = document.getElementById('progressBar');
-const firstPageBtn = document.getElementById('firstPageBtn');
-const prevPageBtn = document.getElementById('prevPageBtn');
-const nextPageBtn = document.getElementById('nextPageBtn');
-const lastPageBtn = document.getElementById('lastPageBtn');
-const pageInfo = document.getElementById('pageInfo');
-const goTopBtn = document.getElementById('goTopBtn');
-const insertTextInput = document.getElementById('insertText');
-const exportBtn = document.getElementById('exportBtn');
-
-const menuAbout = document.getElementById('menuAbout');
-const menuInsert = document.getElementById('menuInsert');
-const menuTools = document.getElementById('menuTools');
-
-const aboutPage = document.getElementById('aboutPage');
-const insertPage = document.getElementById('insertPage');
-const toolsPage = document.getElementById('toolsPage');
+// ===== DOM Elements (populated on window load) =====
+let elements = {};
 
 // ===== Utility Functions =====
 
-// Open or create IndexedDB database and object store
-function openDB() {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-    request.onupgradeneeded = e => {
-      db = e.target.result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME, { keyPath: 'id' });
-      }
-    };
-    request.onsuccess = e => {
-      db = e.target.result;
-      resolve();
-    };
-    request.onerror = e => reject(e.target.error);
-  });
+/**
+ * Utility to safely get element by ID
+ * @param {string} id 
+ * @returns {HTMLElement|null}
+ */
+function $(id) {
+  return document.getElementById(id);
 }
 
-// Log messages with fade-in effect per entry
-function log(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  div.style.opacity = '0';
-  logDiv.appendChild(div);
-  requestAnimationFrame(() => {
-    div.style.opacity = '1';
-  });
-  logDiv.scrollTop = logDiv.scrollHeight;
-}
-
-// Update status text with optional spinner
-function updateStatus(text, showSpinner = false) {
-  if (showSpinner) {
-    statusP.innerHTML = `${text} <span class="ellipsis" aria-hidden="true"></span>`;
-  } else {
-    statusP.textContent = text;
-  }
-}
-
-// Format numbers in Indian notation for thousands, lakhs, crores
+/**
+ * Format number to Indian system (Thousands, Lakh, Crore)
+ * @param {number} num
+ * @returns {string}
+ */
 function formatIndianNumber(num) {
   if (num < 100000) return num.toLocaleString();
   if (num < 10000000) return (num / 100000).toFixed(0) + ' Lakh';
   return (num / 10000000).toFixed(1) + ' Crore';
 }
 
-// Format duration in human-readable h/m/s
+/**
+ * Format milliseconds to string hh:mm:ss
+ * @param {number} ms 
+ * @returns {string}
+ */
 function formatDuration(ms) {
   const totalSeconds = Math.floor(ms / 1000);
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-
-  const hDisplay = hours > 0 ? hours + (hours === 1 ? ' hour ' : ' hours ') : '';
-  const mDisplay = minutes > 0 ? minutes + (minutes === 1 ? ' minute ' : ' minutes ') : '';
-  const sDisplay = seconds > 0 ? seconds + (seconds === 1 ? ' second' : ' seconds') : '';
-  return (hDisplay + mDisplay + sDisplay).trim() || '0 seconds';
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = totalSeconds % 60;
+  const hStr = h > 0 ? `${h} hour${h > 1 ? 's' : ''} ` : '';
+  const mStr = m > 0 ? `${m} minute${m > 1 ? 's' : ''} ` : '';
+  const sStr = s > 0 ? `${s} second${s > 1 ? 's' : ''}` : '';
+  return (hStr + mStr + sStr).trim() || '0 seconds';
 }
 
-// Enable/disable pagination buttons and update page info text
+/**
+ * Log text message to the log div with fade-in effect
+ * @param {string} text 
+ */
+function log(text) {
+  const logDiv = elements.logDiv;
+  if (!logDiv) return;
+  const div = document.createElement('div');
+  div.textContent = text;
+  div.style.opacity = '0';
+  logDiv.appendChild(div);
+  requestAnimationFrame(() => { div.style.opacity = '1'; });
+  logDiv.scrollTop = logDiv.scrollHeight;
+}
+
+/**
+ * Update status text
+ * @param {string} text 
+ * @param {boolean} [withSpinner=false]
+ */
+function updateStatus(text, withSpinner = false) {
+  const statusP = elements.statusP;
+  if (!statusP) return;
+  if (withSpinner) {
+    statusP.innerHTML = `${text} <span class="ellipsis" aria-hidden="true"></span>`;
+  } else {
+    statusP.textContent = text;
+  }
+}
+
+/**
+ * Enable or disable pagination buttons based on current state
+ */
 function updatePaginationButtons() {
-  firstPageBtn.disabled = currentPage === 0;
-  prevPageBtn.disabled = currentPage === 0;
-  nextPageBtn.disabled = currentPage >= totalPages - 1;
-  lastPageBtn.disabled = currentPage >= totalPages - 1;
+  const { firstPageBtn, prevPageBtn, nextPageBtn, lastPageBtn, pageInfo } = elements;
+  if (!firstPageBtn || !prevPageBtn || !nextPageBtn || !lastPageBtn || !pageInfo) return;
+
+  // Enable buttons only after first batch is fully inserted
+  const isEnabled = batchInsertedCount >= BATCH_SIZE;
+
+  firstPageBtn.disabled = !isEnabled || currentPage === 0;
+  prevPageBtn.disabled = !isEnabled || currentPage === 0;
+  nextPageBtn.disabled = !isEnabled || currentPage >= totalPages - 1;
+  lastPageBtn.disabled = !isEnabled || currentPage >= totalPages - 1;
   pageInfo.textContent = totalPages > 0 ? `Page ${currentPage + 1} / ${totalPages}` : 'Page 0 / 0';
 }
 
-// Load and display a page of records from IndexedDB based on currentPage
+/**
+ * Load and display data entries for given page from IndexedDB
+ * @param {number} page 
+ */
 function loadPage(page) {
+  const { container } = elements;
+  if (!container) return;
+
   container.innerHTML = '';
+
   const startId = page * PAGE_SIZE + 1;
   const maxId = Math.min(batchInsertedCount, TOTAL_ENTRIES);
 
@@ -132,13 +131,14 @@ function loadPage(page) {
   const store = txn.objectStore(STORE_NAME);
   const keyRange = IDBKeyRange.bound(startId, endId);
   const request = store.openCursor(keyRange);
+
   const fragment = document.createDocumentFragment();
   let count = 0;
 
   request.onerror = () => updateStatus('Error loading data.');
 
-  request.onsuccess = e => {
-    const cursor = e.target.result;
+  request.onsuccess = (event) => {
+    const cursor = event.target.result;
     if (cursor) {
       const div = document.createElement('div');
       div.className = 'ramadiv';
@@ -148,94 +148,101 @@ function loadPage(page) {
       cursor.continue();
     } else {
       container.appendChild(fragment);
-      updateStatus(`Showing page ${page + 1} of ${totalPages}. Entries shown: ${count}.`);
+      updateStatus(`Showing ${count} entries on page ${page + 1}.`);
       updatePaginationButtons();
     }
   };
 }
 
-// Pagination Button Handlers
-firstPageBtn.onclick = () => {
-  if (currentPage !== 0) {
-    currentPage = 0;
-    loadPage(currentPage);
-    updatePaginationButtons();
-  }
-};
-prevPageBtn.onclick = () => {
-  if (currentPage > 0) {
-    currentPage--;
-    loadPage(currentPage);
-    updatePaginationButtons();
-  }
-};
-nextPageBtn.onclick = () => {
-  if (currentPage < totalPages - 1) {
-    currentPage++;
-    loadPage(currentPage);
-    updatePaginationButtons();
-  }
-};
-lastPageBtn.onclick = () => {
-  if (currentPage !== totalPages - 1) {
-    currentPage = totalPages - 1;
-    loadPage(currentPage);
-    updatePaginationButtons();
-  }
-};
+/**
+ * Show/hide app sections and update menu button states accordingly
+ * @param {'about'|'insert'|'tools'} section 
+ */
+function showSection(section) {
+  const { aboutPage, insertPage, toolsPage, menuAbout, menuInsert, menuTools } = elements;
+  if (!aboutPage || !insertPage || !toolsPage || !menuAbout || !menuInsert || !menuTools) return;
 
-// Change Insert Button State based on insertion progress
+  aboutPage.style.display = section === 'about' ? 'block' : 'none';
+  insertPage.style.display = section === 'insert' ? 'block' : 'none';
+  toolsPage.style.display = section === 'tools' ? 'block' : 'none';
+
+  menuAbout.disabled = section === 'about';
+  menuInsert.disabled = section === 'insert';
+  menuTools.disabled = section === 'tools';
+}
+
+/**
+ * Change insert process UI state
+ * @param {'ready'|'inserting'|'done'} state 
+ */
 function setInsertState(state) {
-  if (state === 'ready') {
-    startBtn.disabled = false;
-    startBtn.textContent = 'Start Insert 1 Crore';
-    startBtn.classList.remove('working');
-    cancelBtn.style.display = 'none';
-    cancelBtn.disabled = false;
-    progressBar.style.display = 'none';
-    totalTimeP.textContent = '';
-  } else if (state === 'inserting') {
-    startBtn.disabled = true;
-    startBtn.textContent = 'Inserting…';
-    startBtn.classList.add('working');
-    cancelBtn.style.display = 'inline-block';
-    cancelBtn.disabled = false;
-    progressBar.style.display = 'block';
-  } else if (state === 'done') {
-    startBtn.disabled = true;
-    startBtn.textContent = '✅ Insertion Complete';
-    startBtn.classList.remove('working');
-    cancelBtn.style.display = 'none';
-    progressBar.style.display = 'none';
+  const { startBtn, cancelBtn, progressBar, totalTimeP } = elements;
+  if (!startBtn || !cancelBtn || !progressBar || !totalTimeP) return;
+
+  switch (state) {
+    case 'ready':
+      startBtn.disabled = false;
+      startBtn.textContent = 'Start Insert 1 Crore';
+      startBtn.classList.remove('working');
+      cancelBtn.style.display = 'none';
+      cancelBtn.disabled = false;
+      progressBar.style.display = 'none';
+      totalTimeP.textContent = '';
+      break;
+
+    case 'inserting':
+      startBtn.disabled = true;
+      startBtn.textContent = 'Inserting…';
+      startBtn.classList.add('working');
+      cancelBtn.style.display = 'inline-block';
+      cancelBtn.disabled = false;
+      progressBar.style.display = 'block';
+      break;
+
+    case 'done':
+      startBtn.disabled = true;
+      startBtn.textContent = '✅ Insertion Complete';
+      startBtn.classList.remove('working');
+      cancelBtn.style.display = 'none';
+      progressBar.style.display = 'none';
+      break;
   }
 }
 
-// Start insertion process with Web Worker
-startBtn.onclick = () => {
-  if (!isInserting) startInsertion();
-};
+// ===== Event Handlers and Operational Functions =====
 
+/**
+ * Handler for starting insertion process
+ */
+function handleStartInsert() {
+  if (isInserting) return;
+  startInsertion();
+}
+
+/**
+ * Perform the batch insertion in IndexedDB via Web Worker
+ */
 function startInsertion() {
   if (worker) worker.terminate();
 
-  logDiv.textContent = '';
-  updateStatus('Starting insertion in background...', true);
+  if(elements.logDiv) elements.logDiv.textContent = '';
+  updateStatus('Starting insertion...', true);
   setInsertState('inserting');
   isInserting = true;
   cancelRequested = false;
   batchInsertedCount = 0;
-  progressBar.value = 0;
+  if(elements.progressBar) elements.progressBar.value = 0;
   insertionStartTime = performance.now();
 
-  const customText = insertTextInput?.value?.trim() || 'JAI SRI RAM| జై శ్రీ రామ్  |जय श्री रामः';
+  const phrase = elements.insertTextInput?.value?.trim() || 'JAI SRI RAM| జై శ్రీ రామ్  |जय श्री रामः';
 
   worker = new Worker('insertWorker.js');
-  worker.postMessage({ DB_NAME, STORE_NAME, DB_VERSION, TOTAL_ENTRIES, BATCH_SIZE, customText });
+  worker.postMessage({ DB_NAME, STORE_NAME, DB_VERSION, TOTAL_ENTRIES, BATCH_SIZE, phrase });
 
-  worker.onmessage = e => {
+  worker.onmessage = (e) => {
     if (e.data.error) {
       log(`❌ Error: ${e.data.error}`);
-      updateStatus('Error during insertion.', false);
+      updateStatus('Insertion failed.', false);
       setInsertState('ready');
       isInserting = false;
       cancelRequested = false;
@@ -243,24 +250,30 @@ function startInsertion() {
     }
     if (e.data.inserted) {
       batchInsertedCount = e.data.inserted;
-      log(`📝 Inserted ${formatIndianNumber(batchInsertedCount)} entries, batch took ${e.data.batchDurationSecs} seconds.`);
-      updateStatus(`Inserted ${formatIndianNumber(batchInsertedCount)} / ${formatIndianNumber(TOTAL_ENTRIES)} entries`, true);
+      const elapsedSec = (performance.now() - insertionStartTime) / 1000;
+      const speed = batchInsertedCount / elapsedSec;
+      const remaining = TOTAL_ENTRIES - batchInsertedCount;
+      const eta = remaining / speed;
 
-      progressBar.value = Math.min(100, (batchInsertedCount / TOTAL_ENTRIES) * 100);
+      log(`📝 Inserted ${formatIndianNumber(batchInsertedCount)} records, batch took ${e.data.batchDurationSecs} sec.`);
+      updateStatus(`Inserted ${formatIndianNumber(batchInsertedCount)} / ${formatIndianNumber(TOTAL_ENTRIES)} entries | Speed: ${speed.toFixed(2)}/sec | ETA: ${Math.ceil(eta / 60)} min`, true);
 
-      if (batchInsertedCount % 100000 === 0 || batchInsertedCount === TOTAL_ENTRIES) {
-        const pageToLoad = Math.floor((batchInsertedCount - 1) / PAGE_SIZE);
+      if (elements.progressBar) elements.progressBar.value = Math.min(100, (batchInsertedCount / TOTAL_ENTRIES) * 100);
+
+      if (batchInsertedCount >= BATCH_SIZE) enablePaginationButtons(true);
+
+      if (batchInsertedCount % PAGE_SIZE === 0 || batchInsertedCount === TOTAL_ENTRIES) {
         totalPages = Math.ceil(Math.max(batchInsertedCount, TOTAL_ENTRIES) / PAGE_SIZE);
-        currentPage = pageToLoad;
+        currentPage = Math.min(Math.floor(batchInsertedCount / PAGE_SIZE), totalPages - 1);
         loadPage(currentPage);
         updatePaginationButtons();
       }
     }
     if (e.data.done) {
       const totalDuration = performance.now() - insertionStartTime;
-      log('✅ Insertion complete.');
-      updateStatus(`Insertion complete! Total time: ${formatDuration(totalDuration)}`);
-      totalTimeP.textContent = `Total time: ${formatDuration(totalDuration)}`;
+      log('✅ Insertion complete!');
+      updateStatus(`Insertion completed in ${formatDuration(totalDuration)}.`, false);
+      if (elements.totalTimeP) elements.totalTimeP.textContent = `Total time: ${formatDuration(totalDuration)}`;
       totalPages = Math.ceil(TOTAL_ENTRIES / PAGE_SIZE);
       currentPage = 0;
       loadPage(currentPage);
@@ -272,75 +285,86 @@ function startInsertion() {
       if (typeof confetti === 'function') {
         confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
       }
-
-      deleteDbBtn.disabled = false;
+      if (elements.deleteDbBtn) elements.deleteDbBtn.disabled = false;
     }
   };
 
-  worker.onerror = e => {
+  worker.onerror = (e) => {
     log(`⚠️ Worker error: ${e.message}`);
-    updateStatus('Insertion error.');
+    updateStatus('Insertion error.', false);
     setInsertState('ready');
     isInserting = false;
     cancelRequested = false;
   };
 }
 
-// Cancel insertion handler
-cancelBtn.onclick = () => {
+/**
+ * Handler for Cancel Insertion button
+ */
+function handleCancelInsert() {
   if (!isInserting) return;
-  cancelBtn.disabled = true;
+  if(elements.cancelBtn) elements.cancelBtn.disabled = true;
 
   if (worker) {
     worker.terminate();
     worker = null;
   }
-
   cancelRequested = true;
-  updateStatus('Cancelling… Please wait.');
+  updateStatus('Cancelling… Please wait.', false);
   log('❌ User cancelled insertion.');
 
   try {
     if (db) db.close();
-    const deleteRequest = indexedDB.deleteDatabase(DB_NAME);
-    deleteRequest.onsuccess = () => {
-      log('✅ Database deleted after cancellation.');
-      updateStatus('Insertion cancelled. Database cleared.');
-      logDiv.textContent = '';
-      container.innerHTML = '';
-      currentPage = 0;
-      totalPages = 0;
-      updatePaginationButtons();
-      deleteDbBtn.disabled = true;
-      setInsertState('ready');
-      cancelBtn.style.display = 'none';
-      cancelBtn.disabled = false;
-      progressBar.style.display = 'none';
-      totalTimeP.textContent = '';
-      isInserting = false;
+    const deleteReq = indexedDB.deleteDatabase(DB_NAME);
+    deleteReq.onsuccess = () => {
+      log('✅ DB deleted after cancellation.');
+      updateStatus('Insertion cancelled; database cleared.', false);
+      clearUIAfterCancel();
     };
-    deleteRequest.onerror = () => {
-      log('❌ Database deletion failed after cancellation.');
-      updateStatus('Database deletion failed after cancellation.');
-      cancelBtn.disabled = false;
+    deleteReq.onerror = () => {
+      log('❌ Failed to delete DB after cancellation.');
+      updateStatus('Failed to delete DB after cancellation.', false);
+      if(elements.cancelBtn) elements.cancelBtn.disabled = false;
     };
   } catch (e) {
-    log('❌ Exception during cancellation: ' + e);
-    updateStatus('Error during cancellation.');
-    cancelBtn.disabled = false;
+    log(`❌ Exception during cancellation: ${e}`);
+    updateStatus('Error during cancellation.', false);
+    if(elements.cancelBtn) elements.cancelBtn.disabled = false;
   }
 
   if ('caches' in window) {
     caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))));
-    log('🧹 Cache cleared after cancellation.');
+    log('🧹 Cache cleared.');
   }
-};
+}
 
-// Delete database button handler
-deleteDbBtn.onclick = () => {
-  deleteDbBtn.disabled = true;
-  updateStatus('Deleting database... Please wait.');
-  log('🗑️ Delete requested.');
+/**
+ * Reset UI after cancellation of insertion
+ */
+function clearUIAfterCancel() {
+  if(elements.logDiv) elements.logDiv.textContent = '';
+  if(elements.container) elements.container.innerHTML = '';
+  currentPage = 0;
+  totalPages = 0;
+  updatePaginationButtons();
+  if(elements.deleteDbBtn) elements.deleteDbBtn.disabled = true;
+  setInsertState('ready');
+  if(elements.cancelBtn) {
+    elements.cancelBtn.style.display = 'none';
+    elements.cancelBtn.disabled = false;
+  }
+  if(elements.progressBar) elements.progressBar.style.display = 'none';
+  if(elements.totalTimeP) elements.totalTimeP.textContent = '';
+  isInserting = false;
+}
+
+/**
+ * Handler for Delete Database button
+ */
+function handleDeleteDb() {
+  if(elements.deleteDbBtn) elements.deleteDbBtn.disabled = true;
+  updateStatus('Deleting database... Please wait.', false);
+  log('🗑️ Deleting database requested.');
 
   try {
     if (worker) {
@@ -349,50 +373,53 @@ deleteDbBtn.onclick = () => {
       isInserting = false;
       cancelRequested = false;
     }
-
     if (db) db.close();
 
-    const deleteRequest = indexedDB.deleteDatabase(DB_NAME);
-    deleteRequest.onsuccess = () => {
+    const deleteReq = indexedDB.deleteDatabase(DB_NAME);
+    deleteReq.onsuccess = () => {
       log('✅ Database deleted.');
-      updateStatus('Database deleted.');
-      logDiv.textContent = '';
-      container.innerHTML = '';
+      updateStatus('Database deleted.', false);
+      if(elements.logDiv) elements.logDiv.textContent = '';
+      if(elements.container) elements.container.innerHTML = '';
       currentPage = 0;
       totalPages = 0;
       updatePaginationButtons();
       setInsertState('ready');
-      deleteDbBtn.disabled = true;
-      startBtn.disabled = false;
-      cancelBtn.style.display = 'none';
-      cancelBtn.disabled = false;
-      progressBar.style.display = 'none';
-      totalTimeP.textContent = '';
+      if(elements.deleteDbBtn) elements.deleteDbBtn.disabled = true;
+      if(elements.startBtn) elements.startBtn.disabled = false;
+      if(elements.cancelBtn) {
+        elements.cancelBtn.style.display = 'none';
+        elements.cancelBtn.disabled = false;
+      }
+      if(elements.progressBar) elements.progressBar.style.display = 'none';
+      if(elements.totalTimeP) elements.totalTimeP.textContent = '';
     };
-    deleteRequest.onerror = () => {
-      log('❌ Database deletion failed.');
-      updateStatus('Database deletion failed.');
-      deleteDbBtn.disabled = false;
+    deleteReq.onerror = () => {
+      log('❌ Failed to delete database.');
+      updateStatus('Failed to delete database.', false);
+      if(elements.deleteDbBtn) elements.deleteDbBtn.disabled = false;
     };
-    deleteRequest.onblocked = () => {
-      log('⚠️ Deletion blocked. Close other tabs.');
-      updateStatus('Deletion blocked. Close other tabs.');
-      deleteDbBtn.disabled = false;
+    deleteReq.onblocked = () => {
+      log('⚠️ Delete blocked. Close other tabs.');
+      updateStatus('Delete operation blocked.', false);
+      if(elements.deleteDbBtn) elements.deleteDbBtn.disabled = false;
     };
 
     if ('caches' in window) {
       caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))));
-      log('🧹 Cache cleared after deletion.');
+      log('🧹 Cache cleared.');
     }
   } catch (err) {
     log(`❌ Exception during deletion: ${err}`);
-    updateStatus('Error during deletion.');
-    deleteDbBtn.disabled = false;
+    updateStatus('Error deleting database.', false);
+    if(elements.deleteDbBtn) elements.deleteDbBtn.disabled = false;
   }
-};
+}
 
-// Export button handler
-exportBtn?.addEventListener('click', async () => {
+/**
+ * Handle Export Data button click: export all data as JSON file
+ */
+async function handleExport() {
   if (!db) {
     alert('Database not open.');
     return;
@@ -401,18 +428,16 @@ exportBtn?.addEventListener('click', async () => {
     const tx = db.transaction(STORE_NAME, 'readonly');
     const store = tx.objectStore(STORE_NAME);
     const items = [];
-
     await new Promise((resolve, reject) => {
-      store.openCursor().onsuccess = event => {
-        const cursor = event.target.result;
+      const req = store.openCursor();
+      req.onsuccess = e => {
+        const cursor = e.target.result;
         if (cursor) {
           items.push(cursor.value);
           cursor.continue();
-        } else {
-          resolve();
-        }
+        } else resolve();
       };
-      store.openCursor().onerror = e => reject(e.target.error);
+      req.onerror = e => reject(e.target.error);
     });
 
     const blob = new Blob([JSON.stringify(items, null, 2)], { type: 'application/json' });
@@ -420,107 +445,146 @@ exportBtn?.addEventListener('click', async () => {
     const a = document.createElement('a');
     a.href = url;
     a.download = 'rama_koti_backup.json';
+    document.body.appendChild(a);
     a.click();
+    a.remove();
     URL.revokeObjectURL(url);
-    alert(`Exported ${items.length} records successfully.`);
+
+    alert(`Exported ${items.length} entries successfully.`);
   } catch (err) {
     alert('Export failed: ' + err);
   }
-});
-
-// Navigation menu handlers
-function showSection(section) {
-  aboutPage.style.display = section === 'about' ? 'block' : 'none';
-  insertPage.style.display = section === 'insert' ? 'block' : 'none';
-  toolsPage.style.display = section === 'tools' ? 'block' : 'none';
-
-  menuAbout.disabled = section === 'about';
-  menuInsert.disabled = section === 'insert';
-  menuTools.disabled = section === 'tools';
 }
 
-menuAbout.onclick = () => showSection('about');
-menuInsert.onclick = () => showSection('insert');
-menuTools.onclick = () => showSection('tools');
+/**
+ * Enable or disable pagination buttons
+ * @param {boolean} enable
+ */
+function enablePaginationButtons(enable) {
+  if (!elements.firstPageBtn || !elements.prevPageBtn || !elements.nextPageBtn || !elements.lastPageBtn) return;
+  elements.firstPageBtn.disabled = !enable;
+  elements.prevPageBtn.disabled = !enable;
+  elements.nextPageBtn.disabled = !enable;
+  elements.lastPageBtn.disabled = !enable;
+}
 
-// Accessibility: live region for screen readers
-const liveRegion = document.createElement('div');
-liveRegion.setAttribute('aria-live', 'polite');
-liveRegion.style.position = 'absolute';
-liveRegion.style.left = '-9999px';
-liveRegion.style.height = '1px';
-liveRegion.style.width = '1px';
-liveRegion.style.overflow = 'hidden';
-document.body.appendChild(liveRegion);
-
-// Scroll-to-top button visibility toggle
-window.addEventListener('scroll', () => {
+/**
+ * Scroll to top button visibility toggle
+ */
+function toggleGoTopButton() {
+  if (!elements.goTopBtn) return;
   if (window.pageYOffset > 300) {
-    goTopBtn.classList.add('visible');
+    elements.goTopBtn.classList.add('visible');
   } else {
-    goTopBtn.classList.remove('visible');
+    elements.goTopBtn.classList.remove('visible');
   }
-});
+}
 
-// Scroll-to-top button click smooth scroll
-goTopBtn.addEventListener('click', () => {
+/**
+ * Scroll to top smoothly with live region update for screen readers
+ */
+function scrollToTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
-  liveRegion.textContent = 'Scrolled to top';
-});
+  const liveRegion = document.querySelector('[aria-live="polite"]');
+  if (liveRegion) liveRegion.textContent = 'Scrolled to top';
+}
 
-// Initialize app on page load
+// ===== Initialization on window load =====
+
 window.onload = async () => {
-  showSection('about');
+  // Cache DOM elements in 'elements' object
+  elements = {
+    startBtn: $('startBtn'),
+    cancelBtn: $('cancelBtn'),
+    deleteDbBtn: $('deleteDbBtn'),
+    statusP: $('status'),
+    totalTimeP: $('totalTime'),
+    logDiv: $('logDiv'),
+    container: $('dataContainer'),
+    progressBar: $('progressBar'),
+    firstPageBtn: $('firstPageBtn'),
+    prevPageBtn: $('prevPageBtn'),
+    nextPageBtn: $('nextPageBtn'),
+    lastPageBtn: $('lastPageBtn'),
+    pageInfo: $('pageInfo'),
+    goTopBtn: $('goTopBtn'),
+    insertTextInput: $('insertText'),
+    exportBtn: $('exportBtn'),
 
+    menuAbout: $('menuAbout'),
+    menuInsert: $('menuInsert'),
+    menuTools: $('menuTools'),
+
+    aboutPage: $('aboutPage'),
+    insertPage: $('insertPage'),
+    toolsPage: $('toolsPage'),
+
+    menuInstallBtn: $('menuInstallApp'),
+    installPopup: $('installPopup'),
+    installPopupBtn: $('installPopupBtn'),
+    installPopupClose: $('closeInstallPopup'),
+    installPopupText: $('installText')
+  };
+
+  // Navigation menu event listeners
+  if (elements.menuAbout) elements.menuAbout.onclick = () => showSection('about');
+  if (elements.menuInsert) elements.menuInsert.onclick = () => showSection('insert');
+  if (elements.menuTools) elements.menuTools.onclick = () => showSection('tools');
+
+  // Pagination buttons start disabled
+  enablePaginationButtons(false);
+
+  // Scroll to top button event setup
+  if (elements.goTopBtn) {
+    window.addEventListener('scroll', toggleGoTopButton);
+    elements.goTopBtn.addEventListener('click', scrollToTop);
+  }
+
+  // Instantiate button event listeners (start, cancel, delete, export)
+  if (elements.startBtn) elements.startBtn.onclick = handleStartInsert;
+  if (elements.cancelBtn) elements.cancelBtn.onclick = handleCancelInsert;
+  if (elements.deleteDbBtn) elements.deleteDbBtn.onclick = handleDeleteDb;
+  if (elements.exportBtn) elements.exportBtn.onclick = handleExport;
+
+  // Open the DB and load data
   try {
     await openDB();
-
     const tx = db.transaction(STORE_NAME, 'readonly');
     const store = tx.objectStore(STORE_NAME);
     const countReq = store.count();
-
     countReq.onsuccess = () => {
       const count = countReq.result;
       if (count > 0) {
         batchInsertedCount = count;
-        deleteDbBtn.disabled = false;
+        elements.deleteDbBtn.disabled = false;
         totalPages = Math.ceil(count / PAGE_SIZE);
         currentPage = 0;
         loadPage(currentPage);
-        updatePaginationButtons();
+        enablePaginationButtons(true);
         setInsertState('done');
-        updateStatus(`Loaded existing ${formatIndianNumber(count)} entries. Showing page 1.`);
-        startBtn.disabled = true;
-        progressBar.style.display = 'none';
+        updateStatus(`Loaded ${formatIndianNumber(count)} entries. Showing page 1.`);
+        if (elements.startBtn) elements.startBtn.disabled = true;
+        if (elements.progressBar) elements.progressBar.style.display = 'none';
       } else {
-        deleteDbBtn.disabled = true;
-        firstPageBtn.disabled = true;
-        prevPageBtn.disabled = true;
-        nextPageBtn.disabled = true;
-        lastPageBtn.disabled = true;
+        enablePaginationButtons(false);
+        if (elements.deleteDbBtn) elements.deleteDbBtn.disabled = true;
         setInsertState('ready');
         updateStatus('Database empty. Click "Start Insert 1 Crore" to begin.');
-        progressBar.style.display = 'none';
+        if (elements.progressBar) elements.progressBar.style.display = 'none';
       }
     };
-
     countReq.onerror = () => {
       updateStatus('Unable to read database count.');
       setInsertState('ready');
-      firstPageBtn.disabled = true;
-      prevPageBtn.disabled = true;
-      nextPageBtn.disabled = true;
-      lastPageBtn.disabled = true;
-      progressBar.style.display = 'none';
+      enablePaginationButtons(false);
+      if (elements.progressBar) elements.progressBar.style.display = 'none';
     };
-  } catch {
-    deleteDbBtn.disabled = true;
-    firstPageBtn.disabled = true;
-    prevPageBtn.disabled = true;
-    nextPageBtn.disabled = true;
-    lastPageBtn.disabled = true;
+  } catch (e) {
+    enablePaginationButtons(false);
+    if (elements.deleteDbBtn) elements.deleteDbBtn.disabled = true;
+    if (elements.startBtn) elements.startBtn.disabled = false;
     setInsertState('ready');
     updateStatus('Database not initialized. Click "Start Insert 1 Crore" to begin.');
-    progressBar.style.display = 'none';
+    if (elements.progressBar) elements.progressBar.style.display = 'none';
   }
 };

@@ -1,5 +1,5 @@
 /*------------------------------------------------------------
-:root - CSS Variables for consistent theme
+:root - Theme Colors and Variables
 ------------------------------------------------------------*/
 :root {
   --primary-color: #1769aa;
@@ -15,8 +15,7 @@
 }
 
 /*------------------------------------------------------------
-Body and Layout Setup
-Sets global font, colors, max container width, margin & padding
+Base Styles and Layout
 ------------------------------------------------------------*/
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -30,11 +29,12 @@ body {
   min-height: 100vh;
   user-select: text;
   scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /*------------------------------------------------------------
 Headings Styling
-Primary colors and spacing for h1, h2, h3
 ------------------------------------------------------------*/
 h1 {
   text-align: center;
@@ -50,13 +50,18 @@ h2, h3 {
 }
 
 /*------------------------------------------------------------
-Navigation Menu Styles
-Centered buttons styled with primary theme colors,
-hover, disabled, and responsive behaviors
+Navigation Menu Styling
 ------------------------------------------------------------*/
 #menuBar {
   text-align: center;
   margin-bottom: 30px;
+}
+
+#menuBar img.menuIcon {
+  vertical-align: middle;
+  margin-right: 12px;
+  width: 36px;
+  height: 36px;
 }
 
 #menuBar button {
@@ -86,11 +91,10 @@ hover, disabled, and responsive behaviors
 
 /*------------------------------------------------------------
 Page Sections Styling
-Background, padding, border-radius, font styling for main sections
 ------------------------------------------------------------*/
 section {
   max-width: 900px;
-  background-color: #f1f8ff;
+  background-color: var(--card-bg);
   border-radius: var(--border-radius);
   padding: 20px 25px;
   margin: 20px auto;
@@ -100,20 +104,17 @@ section {
   color: var(--text-color);
 }
 
-/* Show About section by default */
 #aboutPage {
   display: block;
 }
 
-/* Hide other sections initially */
 #insertPage,
 #toolsPage {
   display: none;
 }
 
 /*------------------------------------------------------------
-Lists Styling
-Bulleted lists with left margin for readability
+Lists Styling for Tools Section
 ------------------------------------------------------------*/
 ul {
   list-style: disc;
@@ -121,9 +122,7 @@ ul {
 }
 
 /*------------------------------------------------------------
-Buttons Styling
-Global button appearance, including hover, disabled, and active states,
-plus a 'working' state with distinct color
+Buttons Styling (General)
 ------------------------------------------------------------*/
 button {
   background-color: var(--primary-color);
@@ -155,14 +154,30 @@ button:disabled {
 }
 
 button.working {
-  background: #f5af19;
+  background: #f0ad4e;
   color: #fff;
   cursor: not-allowed;
 }
 
 /*------------------------------------------------------------
-Status & Time Display
-Styled status text and total time display with theme colors
+Input & Textarea Styling
+------------------------------------------------------------*/
+textarea#insertText {
+  width: 100%;
+  min-height: 80px;
+  font-size: 18px;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  resize: vertical;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  font-family: inherit;
+  color: var(--text-color);
+}
+
+/*------------------------------------------------------------
+Status and Timer Display
 ------------------------------------------------------------*/
 #status {
   font-weight: 600;
@@ -181,9 +196,7 @@ Styled status text and total time display with theme colors
 }
 
 /*------------------------------------------------------------
-Log Container Styling
-Fixed height container with monospace font for logs,
-scrolling enabled, and individual log fade-in effect
+Log Display Container
 ------------------------------------------------------------*/
 #logDiv {
   background: var(--log-bg);
@@ -193,7 +206,7 @@ scrolling enabled, and individual log fade-in effect
   font-family: monospace;
   font-size: 13px;
   border-radius: 6px;
-  margin-top: 15px;
+  margin-top: 20px;
   white-space: pre-line;
   border: 1px solid #ccc;
   user-select: text;
@@ -212,8 +225,7 @@ scrolling enabled, and individual log fade-in effect
 }
 
 /*------------------------------------------------------------
-Data Display Container
-Scrollable container for entries with themed text & background
+Data Entries Container and Entry Styling
 ------------------------------------------------------------*/
 #dataContainer {
   margin-top: 20px;
@@ -229,7 +241,6 @@ Scrollable container for entries with themed text & background
   user-select: text;
 }
 
-/* Individual data entries styling */
 .ramadiv {
   background: #d4e3fa;
   padding: 8px 12px;
@@ -252,7 +263,6 @@ Scrollable container for entries with themed text & background
 
 /*------------------------------------------------------------
 Pagination Controls Styling
-Centered pagination buttons and page info with consistent styling
 ------------------------------------------------------------*/
 #paginationBar {
   margin: 20px 0;
@@ -261,7 +271,7 @@ Centered pagination buttons and page info with consistent styling
 }
 
 #paginationBar button {
-  min-width: 80px;
+  min-width: 90px;
   background-color: var(--primary-color);
   color: white;
   border: none;
@@ -272,7 +282,6 @@ Centered pagination buttons and page info with consistent styling
   margin: 3px 6px;
   cursor: pointer;
   box-shadow: 0 4px 8px rgba(23,105,170,0.4);
-  transition: background-color 0.3s ease;
   user-select: none;
 }
 
@@ -287,23 +296,22 @@ Centered pagination buttons and page info with consistent styling
 
 #pageInfo {
   font-weight: 600;
-  user-select: none;
   margin: 0 15px;
+  user-select: none;
 }
 
 /*------------------------------------------------------------
 Progress Bar Styling
-Modern, smooth progress bar with rounded edges and theme colors
 ------------------------------------------------------------*/
 progress#progressBar {
   display: none;
-  appearance: none;
   -webkit-appearance: none;
+  appearance: none;
   width: 100%;
   height: 20px;
   border-radius: 10px;
   overflow: hidden;
-  margin: 15px auto;
+  margin: 20px auto 0;
   background-color: #ddd;
   transition: width 0.3s ease;
 }
@@ -326,11 +334,9 @@ progress#progressBar::-moz-progress-bar {
 }
 
 /*------------------------------------------------------------
-PWA Install Banner Styling
-Hidden by default, shows with fade and slide-in using 'visible' class
+Install Banner Styling
 ------------------------------------------------------------*/
 #installBanner {
-  /* Hidden initially */
   display: none;
   opacity: 0;
   pointer-events: none;
@@ -346,15 +352,11 @@ Hidden by default, shows with fade and slide-in using 'visible' class
   font-size: 14px;
   max-width: 280px;
   user-select: none;
-  z-index: 10000;
-
   display: flex;
   align-items: center;
   gap: 12px;
-
-  /* Animation */
   transition: opacity 0.4s ease, transform 0.3s ease;
-  transform: translateY(-20px); /* slide up slightly off screen */
+  transform: translateY(-20px);
   box-sizing: border-box;
   flex-wrap: nowrap;
 }
@@ -362,11 +364,10 @@ Hidden by default, shows with fade and slide-in using 'visible' class
 #installBanner.visible {
   display: flex;
   opacity: 0.95;
-  transform: translateY(0); /* slide in place */
   pointer-events: auto;
+  transform: translateY(0);
 }
 
-/* Responsive styling for smaller screens */
 @media (max-width: 600px) {
   #installBanner {
     left: 20px;
@@ -378,14 +379,12 @@ Hidden by default, shows with fade and slide-in using 'visible' class
     padding: 12px 16px;
     max-width: unset;
   }
-
   #installBanner span {
     flex-basis: 100%;
     margin-bottom: 8px;
   }
 }
 
-/* Install Banner Buttons */
 #installBanner button {
   background: white;
   color: var(--primary-color);
@@ -397,15 +396,15 @@ Hidden by default, shows with fade and slide-in using 'visible' class
   min-width: 48px;
   user-select: none;
   user-drag: none;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s;
   font-size: 13px;
 }
 
 #installBanner button:hover {
-  background-color: #ddd;
+  background: #ddd;
 }
 
-#installBanner button.dismiss-btn {
+#installBanner button.dismissBtn {
   background: var(--error-color);
   color: white;
   min-width: 36px;
@@ -414,13 +413,12 @@ Hidden by default, shows with fade and slide-in using 'visible' class
   user-drag: none;
 }
 
-#installBanner button.dismiss-btn:hover {
-  background-color: #b03a3a;
+#installBanner button.dismissBtn:hover {
+  background: #b03a3a;
 }
 
 /*------------------------------------------------------------
 Toast Notification Styling
-Position fixed with theming and hidden by default
 ------------------------------------------------------------*/
 #toast {
   position: fixed;
@@ -435,14 +433,13 @@ Position fixed with theming and hidden by default
   font-weight: 600;
   opacity: 0.9;
   z-index: 10001;
-  display: none;
   user-select: none;
   user-drag: none;
+  display: none;
 }
 
 /*------------------------------------------------------------
-Scroll-To-Top Button Styling
-Hidden by default, fade and scale to show
+Scroll to Top Button Styling
 ------------------------------------------------------------*/
 #goTopBtn {
   display: none;
@@ -458,15 +455,13 @@ Hidden by default, fade and scale to show
   border-radius: 50px;
   cursor: pointer;
   box-shadow: 0 6px 18px rgba(23,105,170,0.7);
-  z-index: 9999;
-
   user-select: none;
   user-drag: none;
-
+  z-index: 9999;
   opacity: 0;
   pointer-events: none;
-  transform: scale(0.85);
-  transition: opacity 0.4s ease, transform 0.3s ease;
+  transform: scale(0.88);
+  transition: opacity 0.4s, transform 0.3s;
 }
 
 #goTopBtn.visible {
@@ -504,188 +499,34 @@ Hidden by default, fade and scale to show
 }
 
 /*------------------------------------------------------------
-Footer Styling
-Clean simple footer with muted colors and padding
-------------------------------------------------------------*/
-#footer {
-  text-align: center;
-  margin-top: 40px;
-  padding: 20px;
-  border-top: 1px solid #ddd;
-  font-size: 14px;
-  color: #666;
-  background-color: var(--background-color);
-  user-select: none;
-  user-drag: none;
-}
-
-#footer p {
-  margin: 0;
-  font-weight: 500;
-}
-
-/*------------------------------------------------------------
-Animated Ellipsis for Loading Spinner
-Simple CSS @keyframes for ellipsis animation
-------------------------------------------------------------*/
-@keyframes ellipsis {
-  to {
-    width: 2.5em;
-  }
-}
-
-.ellipsis::after {
-  content: '...';
-  display: inline-block;
-  overflow: hidden;
-  vertical-align: bottom;
-  animation: ellipsis 1s infinite;
-  width: 0;
-}
-
-/*------------------------------------------------------------
-Responsive Adjustments for Smaller Devices
-Stacking nav buttons, reducing container sizes, etc.
-------------------------------------------------------------*/
-@media (max-width: 600px) {
-  body {
-    padding: 15px;
-  }
-
-  #menuBar button {
-    width: 100%;
-    margin: 5px 0;
-  }
-
-  #dataContainer {
-    max-height: 300px;
-  }
-
-  #logDiv {
-    height: 120px;
-  }
-
-  #installBanner {
-    left: 20px;
-    right: 20px;
-    bottom: 15px;
-    top: auto;
-    flex-wrap: wrap;
-    font-size: 14px;
-    padding: 12px 16px;
-    max-width: unset;
-  }
-
-  #installBanner span {
-    flex-basis: 100%;
-    margin-bottom: 8px;
-  }
-
-  button {
-    padding: 14px 24px;
-    font-size: 18px;
-    min-width: 100%;
-  }
-}
-
-/*------------------------------------------------------------
-Dark Mode Styling
-Overrides for colors and backgrounds under prefers-color-scheme: dark
-------------------------------------------------------------*/
-@media (prefers-color-scheme: dark) {
-  :root {
-    --primary-color: #0d47a1;
-    --primary-hover: #002171;
-    --background-color: #121212;
-    --card-bg: #1e1e1e;
-    --log-bg: #2c2c2c;
-    --text-color: #e0e0e0;
-    --success-color: #4caf50;
-    --error-color: #d9534f;
-  }
-
-  body {
-    background: var(--background-color);
-    color: var(--text-color);
-  }
-
-  section {
-    background-color: var(--card-bg);
-    border: 1px solid #333;
-  }
-
-  #logDiv {
-    background: var(--log-bg);
-    border: 1px solid #444;
-  }
-
-  button {
-    background-color: var(--primary-color);
-    color: white;
-  }
-
-  #installBanner {
-    background: var(--primary-color);
-  }
-
-  #toast {
-    background-color: var(--primary-color);
-  }
-}
-
-/*------------------------------------------------------------
-Scrollbar Styling
-Custom narrow scrollbar with primary colors on WebKit browsers
-------------------------------------------------------------*/
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--primary-color);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--primary-hover);
-}
-
-/*------------------------------------------------------------
-Print Media Queries
-Simplified print view with no scrollbars or interactive controls
+Print Styles
 ------------------------------------------------------------*/
 @media print {
   ::-webkit-scrollbar {
     display: none;
   }
-
   body {
     background: white;
     color: black;
   }
-
   #menuBar,
   #installBanner,
   #goTopBtn,
   #paginationBar,
-  #buttons,
-  #export,
+  #buttonsBar,
+  #exportBtn,
   #toast {
     display: none !important;
   }
-
   section {
     page-break-inside: avoid;
   }
-
   button {
-    display: none !important;
+    display: none;
   }
-
   #dataContainer,
   #logDiv {
-    max-height: none !important;
+    max-height: unset !important;
     overflow: visible !important;
   }
 }

@@ -1,93 +1,97 @@
-// Web Worker code for inserting large number of entries into IndexedDB in batches
+// Web Worker: Efficient Batch Insert to IndexedDB for Sri Rama Koti
+// Receives parameters from main thread and inserts TOTAL_ENTRIES in BATCH_SIZE chunks
 
+/**
+ * Open or create IndexedDB database and object store
+ * @param {string} dbName
+ * @param {number} dbVersion
+ * @param {string} storeName
+ * @returns {Promise<IDBDatabase>}
+ */
+function openDB(dbName, dbVersion, storeName) {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(dbName, dbVersion);
+
+    req.onupgradeneeded = (evt) => {
+      const db = evt.target.result;
+      if (!db.objectStoreNames.contains(storeName)) {
+        db.createObjectStore(storeName, { keyPath: "id" });
+      }
+    };
+
+    req.onsuccess = (evt) => resolve(evt.target.result);
+    req.onerror = (evt) => reject(evt.target.error);
+  });
+}
+
+/**
+ * Insert a batch of entries into IndexedDB
+ * @param {IDBDatabase} db
+ * @param {string} storeName
+ * @param {number} startId
+ * @param {number} endId
+ * @param {string} text
+ * @returns {Promise<{duration: number, inserted: number}>}
+ */
+function insertBatch(db, storeName, startId, endId, text) {
+  return new Promise((resolve, reject) => {
+    const startTime = performance.now();
+    const tx = db.transaction(storeName, "readwrite");
+    const store = tx.objectStore(storeName);
+
+    for (let id = startId; id <= endId; id++) {
+      store.put({
+        id,
+        text,
+      });
+    }
+
+    tx.oncomplete = () => {
+      const duration = (performance.now() - startTime) / 1000;
+      resolve({ duration, inserted: endId });
+    };
+    tx.onerror = (e) => reject(e.target.error);
+  });
+}
+
+// Main worker message receiver: controls batch process
 self.onmessage = async (e) => {
-  // Destructure data from main thread message
   const {
     DB_NAME,
     STORE_NAME,
     DB_VERSION,
     TOTAL_ENTRIES,
     BATCH_SIZE,
-    customText = "JAI SRI RAM| జై శ్రీ రామ్  |जय श्री रामः",
+    phrase = "JAI SRI RAM| జై శ్రీ రామ్  |जय श्री रामः",
   } = e.data;
 
-  let db;
-
-  // Open (or create) the IndexedDB database and object store
-  function openDB() {
-    return new Promise((resolve, reject) => {
-      const req = indexedDB.open(DB_NAME, DB_VERSION);
-
-      req.onupgradeneeded = (evt) => {
-        db = evt.target.result;
-        if (!db.objectStoreNames.contains(STORE_NAME)) {
-          db.createObjectStore(STORE_NAME, { keyPath: "id" });
-        }
-      };
-
-      req.onsuccess = (evt) => {
-        db = evt.target.result;
-        resolve();
-      };
-
-      req.onerror = (evt) => reject(evt.target.error);
-    });
-  }
-
   try {
-    await openDB();
+    const db = await openDB(DB_NAME, DB_VERSION, STORE_NAME);
 
-    // Insert entries in batches to prevent blocking the thread
+    // Insert TOTAL_ENTRIES in BATCH_SIZE increments
     for (let i = 0; i < TOTAL_ENTRIES; i += BATCH_SIZE) {
-      const startTime = performance.now();
+      const startId = i + 1;
+      const endId = Math.min(i + BATCH_SIZE, TOTAL_ENTRIES);
 
-      await new Promise((resolve, reject) => {
-        const txn = db.transaction(STORE_NAME, "readwrite");
-        const store = txn.objectStore(STORE_NAME);
+      const result = await insertBatch(db, STORE_NAME, startId, endId, phrase);
 
-        // Insert records in the current batch
-        for (
-          let j = 0;
-          j < BATCH_SIZE && i + j < TOTAL_ENTRIES;
-          j++
-        ) {
-          store.put({
-            id: i + j + 1, // Unique key starting from 1
-            text: customText,
-          });
-        }
-
-        // When transaction completes successfully, report progress
-        txn.oncomplete = () => {
-          const endTime = performance.now();
-          const batchDurationSecs = ((endTime - startTime) / 1000).toFixed(2);
-          const insertedCount = Math.min(i + BATCH_SIZE, TOTAL_ENTRIES);
-
-          self.postMessage({
-            inserted: insertedCount,
-            total: TOTAL_ENTRIES,
-            batchDurationSecs,
-          });
-
-          resolve();
-        };
-
-        // If transaction fails, reject the promise with the error
-        txn.onerror = (e) => {
-          reject(e.target.error);
-        };
+      // Notify main thread about this batch's progress
+      self.postMessage({
+        inserted: endId,
+        total: TOTAL_ENTRIES,
+        batchDurationSecs: result.duration.toFixed(2),
       });
     }
 
-    // Signal to main thread that insertion is done
+    // All entries inserted successfully!
     self.postMessage({ done: true });
   } catch (error) {
-    // On any error, send error message to main thread
+    // Report any setup/insert error to main thread
     self.postMessage({ error: error.message || error.toString() });
   }
 };
 
-// Catch any uncaught errors in the worker and send to main thread
+// Catch-all for unexpected errors
 self.onerror = (error) => {
   self.postMessage({ error: error.message || error.toString() });
 };
