@@ -4,11 +4,6 @@
 // Repository: https://github.com/sandeepmirala/SRIRAMAKI
 // ===================================================================
 
-// ===================================================================
-// MAIN.JS - Sri Rama Koti PWA
-// Author: Your Name or Sandeep
-// ===================================================================
-
 // Configuration
 const DB_NAME = "SriRamaDB";
 const STORE_NAME = "sriStore";
@@ -38,6 +33,7 @@ function formatNumberIndian(num) {
   if (num < 10_000_000) return (num / 100_000).toFixed(0) + " Lakh";
   return (num / 10_000_000).toFixed(1) + " Crore";
 }
+
 function formatDuration(ms) {
   const secs = Math.floor(ms / 1000);
   const h = Math.floor(secs / 3600);
@@ -50,6 +46,16 @@ function formatDuration(ms) {
   if (s || parts.length === 0) parts.push(`${s} second${s > 1 ? "s" : ""}`);
   return parts.join(" ");
 }
+
+// New function for HH:MM:SS format
+function formatDurationHHMMSS(ms) {
+  const totalSecs = Math.floor(ms / 1000);
+  const h = Math.floor(totalSecs / 3600);
+  const m = Math.floor((totalSecs % 3600) / 60);
+  const s = totalSecs % 60;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+
 function log(text) {
   if (!elements.logDiv) return;
   const div = document.createElement("div");
@@ -59,27 +65,32 @@ function log(text) {
   requestAnimationFrame(() => (div.style.opacity = "1"));
   elements.logDiv.scrollTop = elements.logDiv.scrollHeight;
 }
+
 function updateStatus(text, spinner = false) {
   if (!elements.status) return;
   elements.status.innerHTML = spinner
     ? `${text} <span class="ellipsis" aria-hidden="true"></span>`
     : text;
 }
+
 function showPaging(show) {
   if (elements.paginationBar) elements.paginationBar.style.display = show ? "" : "none";
 }
+
 function showData(show) {
   if (elements.dataContainer) {
     elements.dataContainer.style.display = show ? "" : "none";
     if (!show) elements.dataContainer.innerHTML = "";
   }
 }
+
 function enablePagination(enable) {
   ["first", "prev", "next", "last"].forEach((key) => {
     const btn = elements[`${key}PageBtn`];
     if (btn) btn.disabled = !enable;
   });
 }
+
 function updatePagination() {
   const { firstPageBtn, prevPageBtn, nextPageBtn, lastPageBtn, pageInfo } = elements;
   if (!(firstPageBtn && prevPageBtn && nextPageBtn && lastPageBtn && pageInfo)) return;
@@ -134,7 +145,6 @@ async function openDB() {
     };
 
     req.onerror = (event) => reject(event.target.error);
-
     req.onblocked = () => updateStatus("Database open blocked, close other tabs.");
   });
 }
@@ -374,7 +384,7 @@ async function startInsertion() {
 
   let startTime = performance.now();
 
-  worker = new Worker("SriramaInsert.js", { type: "module" }  );
+  worker = new Worker("SriramaInsert.js", { type: "module" });
   worker.postMessage({ DB_NAME, STORE_NAME, DB_VERSION, TOTAL_ENTRIES, BATCH_SIZE, phrase });
 
   worker.onmessage = async (e) => {
@@ -392,10 +402,21 @@ async function startInsertion() {
     if (typeof e.data.inserted === "number") {
       batchInserted = e.data.inserted;
 
+      // Enhanced milestone display when 1 crore is reached
       if (!milestoneShown && batchInserted >= TOTAL_ENTRIES) {
         milestoneShown = true;
-        if (elements.milestoneDiv) elements.milestoneDiv.style.display = "";
+        
+        // Show milestone celebration
+        if (elements.milestoneDiv) {
+          elements.milestoneDiv.style.display = "block";
+          // Focus on milestone for accessibility
+          setTimeout(() => {
+            elements.milestoneDiv.focus();
+          }, 100);
+        }
+        
         updateStatus("🎉 1 Crore insertion complete!");
+        log("🎉 MILESTONE: 1 Crore (10,000,000) entries inserted successfully!");
       }
 
       let elapsed = (performance.now() - startTime) / 1000;
@@ -427,15 +448,38 @@ async function startInsertion() {
     if (e.data.done) {
       let totalDuration = performance.now() - startTime;
       log("Insertion complete");
-      updateStatus(`Insertion finished in ${formatDuration(totalDuration)}`, false);
-      if (elements.total) elements.total.textContent = `Total time: ${formatDuration(totalDuration)}`;
+      
+      // Format time in both formats
+      const humanReadableTime = formatDuration(totalDuration);
+      const timeHHMMSS = formatDurationHHMMSS(totalDuration);
+      
+      updateStatus(`Insertion finished in ${humanReadableTime}`, false);
+      
+      // Update total time display with HH:MM:SS format
+      if (elements.totalTime) {
+        elements.totalTime.textContent = `Total time: ${timeHHMMSS} (${humanReadableTime})`;
+      }
+      
+      // Show time stats container if it exists
+      if (elements.timeStats) {
+        elements.timeStats.style.display = "block";
+      }
+      
+      log(`Total insertion time: ${timeHHMMSS} (${humanReadableTime})`);
+      log(`Performance: ${(TOTAL_ENTRIES / (totalDuration / 1000)).toFixed(0)} entries/sec average`);
+      
       setInsertState("done");
       isInserting = false;
       if (worker) {
         worker.terminate();
         worker = null;
       }
-      if (typeof window.confetti === "function") window.confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+      
+      // Confetti celebration
+      if (typeof window.confetti === "function") {
+        window.confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+      }
+      
       if (elements.deleteBtn) elements.deleteBtn.disabled = false;
     }
   };
@@ -495,7 +539,6 @@ async function cancelInsertion() {
   }
 }
 
-
 // Cache the goTop button element (make sure this matches your HTML id)
 const goTopBtn = document.getElementById('goTop');
 
@@ -540,25 +583,25 @@ function setupScrollToTopButton() {
 // Call this function after your DOM is loaded
 window.addEventListener('DOMContentLoaded', setupScrollToTopButton);
 
-
-function clearUI(){
-  if(elements.logDiv) elements.logDiv.innerHTML = '<div>Ready to start...</div>';
-  if(elements.dataContainer) elements.dataContainer.innerHTML = '';
+function clearUI() {
+  if (elements.logDiv) elements.logDiv.innerHTML = '<div>Ready to start...</div>';
+  if (elements.dataContainer) elements.dataContainer.innerHTML = '';
   showPaging(false);
   showData(false);
-  batchInserted=0;
-  currentPage=0;
-  totalPages=0;
-  milestoneShown=false;
-  if(elements.pageInfo) elements.pageInfo.textContent='Page 0 / 0';
+  batchInserted = 0;
+  currentPage = 0;
+  totalPages = 0;
+  milestoneShown = false;
+  if (elements.pageInfo) elements.pageInfo.textContent = 'Page 0 / 0';
   updateStatus("Ready");
   enablePagination(false);
-  if(elements.milestoneDiv) elements.milestoneDiv.style.display='none';
-  if(elements.progressBar) {
-    elements.progressBar.value=0;
-    elements.progressBar.style.display='none';
+  if (elements.milestoneDiv) elements.milestoneDiv.style.display = 'none';
+  if (elements.timeStats) elements.timeStats.style.display = 'none';
+  if (elements.progressBar) {
+    elements.progressBar.value = 0;
+    elements.progressBar.style.display = 'none';
   }
-  if(elements.total) elements.total.textContent='';
+  if (elements.totalTime) elements.totalTime.textContent = '';
 }
 
 // Setup scroll to top button
@@ -567,13 +610,14 @@ function scrollToTop() {
   const liveRegion = document.querySelector("[aria-live='polite']");
   if (liveRegion) liveRegion.textContent = "Scrolled to top";
 }
+
 function setupScrollListener() {
-  if (!elements.go) return;
-  elements.go.style.display = "none";
+  if (!elements.goTop) return;
+  elements.goTop.style.display = "none";
   window.addEventListener("scroll", () => {
-    elements.go.style.display = window.pageYOffset > 200 ? "block" : "none";
+    elements.goTop.style.display = window.pageYOffset > 200 ? "block" : "none";
   });
-  elements.go.onclick = scrollToTop;
+  elements.goTop.onclick = scrollToTop;
 }
 
 // Initialization
@@ -584,7 +628,8 @@ window.onload = () => {
     deleteBtn: $("deleteBtn"),
     exportBtn: $("exportBtn"),
     status: $("status"),
-    total: $("total"),
+    totalTime: $("totalTime"),
+    timeStats: $("timeStats"),
     logDiv: $("logDiv"),
     dataContainer: $("dataContainer"),
     paginationBar: $("paginationBar"),
@@ -594,7 +639,7 @@ window.onload = () => {
     nextPageBtn: $("nextPageBtn"),
     lastPageBtn: $("lastPageBtn"),
     pageInfo: $("pageInfo"),
-    go: $("go"),
+    goTop: $("goTop"),
     insertText: $("insertText"),
     menuAbout: $("menuAbout"),
     insertPage: $("insertPage"),
@@ -649,4 +694,3 @@ window.addEventListener("unhandledrejection", (e) => {
   console.error("Unhandled rejection:", e.reason || e.message);
   updateStatus("An unexpected error occurred. Please reload.");
 });
-// Clear UI elements
