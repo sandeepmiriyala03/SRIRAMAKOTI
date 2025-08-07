@@ -1,601 +1,345 @@
-/*------------------------------------------------------------
-:root - Theme Colors and Variables
-------------------------------------------------------------*/
-:root {
-  --primary-color: #1769aa;
-  --primary-hover: #0f4f85;
-  --background-color: #f9f9f9;
-  --card-bg: #fff;
-  --log-bg: #eee;
-  --text-color: #333;
-  --border-radius: 8px;
-  --box-shadow: 0 0 15px rgba(0,0,0,0.1);
-  --success-color: #4caf50;
-  --error-color: #d9534f;
+/* Reset and basics */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
-
-/*------------------------------------------------------------
-Base Styles
-------------------------------------------------------------*/
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   max-width: 900px;
-  margin: 40px auto;
-  padding: 20px;
-  background: var(--background-color);
-  border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
-  color: var(--text-color);
-  min-height: 100vh;
+  margin: 1rem auto 3rem;
+  padding: 0 1rem;
+  background: #fff9f0;
+  color: #3b2f2f;
+  line-height: 1.5;
   user-select: text;
-  scroll-behavior: smooth;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
-
-/*------------------------------------------------------------
-Headings Styling
-------------------------------------------------------------*/
+/* Headings */
 h1 {
+  font-family: Georgia, serif;
+  font-weight: 700;
+  font-size: 2.8rem;
   text-align: center;
-  color: var(--primary-color);
+  color: #b55b2a;
+  margin: 0 0 1rem;
   user-select: none;
-  margin-bottom: 1rem;
 }
 
 h2, h3 {
-  color: var(--primary-color);
-  margin-top: 1em;
-  margin-bottom: 0.5em;
+  font-family: Georgia, serif;
+  color: #b55b2a;
+  margin-top: 1.5rem;
+  margin-bottom: 0.8rem;
 }
 
-
-/*------------------------------------------------------------
-Sri Rama Icon below heading
-------------------------------------------------------------*/
-.sriRamaIcon {
+/* Hero icon */
+#heroIcon {
   display: block;
-  width: 120px;  /* Adjust size as needed */
+  margin: 0 auto 1rem;
+  width: 120px;
   height: 120px;
-  margin: 0 auto 2rem auto;
+  border: 3px solid #b55b2a;
   border-radius: 16px;
-  border: 3px solid var(--primary-color);
-  background: #fff;
-  box-shadow: 0 8px 22px rgba(23,105,170,0.22);
-  object-fit: contain;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-  cursor: default;
+  box-shadow: 0 6px 15px rgba(181, 91, 42, 0.3);
+  transition: transform 0.3s ease;
+  user-select: none;
 }
-
-.sriRamaIcon:hover,
-.sriRamaIcon:focus {
-  transform: scale(1.06) rotate(-4deg);
-  box-shadow: 0 12px 36px rgba(23,105,170,0.4);
+#heroIcon:hover, #heroIcon:focus {
+  transform: scale(1.05) rotate(-3deg);
   outline: none;
 }
 
-
-/*------------------------------------------------------------
-Navigation Menu Styling
-------------------------------------------------------------*/
+/* Navigation */
 #menuBar {
-  text-align: center;
-  margin-bottom: 30px;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
 }
-
 #menuBar button {
-  margin: 0 10px 20px;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 8px 16px;
-  border-radius: 6px;
-  border: none;
-  background-color: var(--primary-color);
-  color: white;
-  transition: background-color 0.3s ease;
-  min-width: 120px;
-  user-select: none;
-  -webkit-user-drag: none;
-}
-
-#menuBar button:hover:not(:disabled) {
-  background-color: var(--primary-hover);
-}
-
-#menuBar button:disabled {
-  background-color: #0f4f85;
-  cursor: default;
-  opacity: 0.7;
-}
-
-
-/*------------------------------------------------------------
-Sections Styling
-------------------------------------------------------------*/
-section {
-  max-width: 900px;
-  background-color: var(--card-bg);
-  border-radius: var(--border-radius);
-  padding: 20px 25px;
-  margin: 20px auto;
-  font-family: Arial, sans-serif;
-  font-size: 16px;
-  line-height: 1.5;
-  color: var(--text-color);
-}
-
-#aboutPage {
-  display: block;  /* Initially visible */
-}
-
-#insertPage,
-#toolsPage {
-  display: none;   /* Initially hidden */
-}
-
-
-/*------------------------------------------------------------
-Lists Styling (Tools section)
-------------------------------------------------------------*/
-ul {
-  list-style: disc;
-  margin-left: 20px;
-}
-
-
-/*------------------------------------------------------------
-Buttons Styling (Global)
-------------------------------------------------------------*/
-button {
-  background-color: var(--primary-color);
+  background: #b55b2a;
   color: white;
   border: none;
+  border-radius: 8px;
   padding: 10px 20px;
-  margin: 5px 7px;
-  border-radius: 6px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 8px rgba(23,105,170,0.4);
-  transition: background-color 0.3s ease, transform 0.1s ease;
-  min-width: 110px;
-  user-select: text;
-  -webkit-user-drag: none;
+  user-select: none;
+  white-space: nowrap;
+  transition: background 0.3s ease;
 }
-
-button:hover:not(:disabled) {
-  background-color: var(--primary-hover);
+#menuBar button:hover:not(:disabled),
+#menuBar button:focus:not(:disabled) {
+  background: #8f431d;
+  outline: none;
 }
-
-button:active {
-  transform: scale(0.95);
-}
-
-button:disabled {
-  opacity: 0.5;
+#menuBar button:disabled {
+  background: #8f431d;
+  opacity: 0.7;
   cursor: default;
 }
 
-button.working {
-  background: #f0ad4e;
-  color: #fff;
-  cursor: not-allowed;
-}
-
-
-/*------------------------------------------------------------
-Textarea Styling (Input area)
-------------------------------------------------------------*/
-textarea#insertText {
+/* Textarea */
+#insertText {
   width: 100%;
-  min-height: 80px;
-  font-size: 18px;
-  padding: 10px;
-  border-radius: 6px;
-  margin-bottom: 12px;
+  min-height: 90px;
+  padding: 12px 15px;
+  font-size: 1.2rem;
+  border: 2px solid #b55b2a;
+  border-radius: 12px;
+  font-family: 'Segoe UI';
+  color: #422a13;
   resize: vertical;
   box-sizing: border-box;
-  border: 1px solid #ccc;
-  font-family: inherit;
-  color: var(--text-color);
 }
 
+/* Buttons */
+#buttonsBar {
+  margin-top: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+}
+#buttonsBar button {
+  background: #b55b2a;
+  border: none;
+  border-radius: 12px;
+  color: white;
+  padding: 10px 20px;
+  font-weight: 700;
+  cursor: pointer;
+  min-width: 130px;
+  white-space: nowrap;
+  transition: background 0.3s ease;
+}
+#buttonsBar button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+#buttonsBar button:hover:not(:disabled),
+#buttonsBar button:focus:not(:disabled) {
+  background: #8f431d;
+  outline: none;
+}
 
-/*------------------------------------------------------------
-Status and Timer Display Styling
-------------------------------------------------------------*/
+/* Progress bar */
+progress#progressBar {
+  width: 100%;
+  height: 22px;
+  border-radius: 12px;
+  margin: 1rem 0 1.5rem;
+  display: none;
+  appearance: none;
+  background: #f9f0e3;
+}
+progress#progressBar::-webkit-progress-value {
+  background: #b55b2a;
+  border-radius: 12px;
+  transition: width 0.3s ease;
+}
+progress#progressBar::-moz-progress-bar {
+  background: #b55b2a;
+  border-radius: 12px;
+  transition: width 0.3s ease;
+}
+
+/* Status and milestone */
 #status {
   font-weight: 600;
+  font-size: 1.2rem;
   text-align: center;
-  margin-top: 10px;
-  min-height: 40px;
+  min-height: 2rem;
+  color: #613f12;
   user-select: none;
-  color: var(--primary-color);
 }
-
-#totalTime {
+#milestoneDiv {
+  background: linear-gradient(45deg, #2aa14b, #20bd79);
+  color: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 1rem;
   font-weight: 700;
+  font-size: 1.4rem;
   text-align: center;
-  margin-top: 4px;
-  color: var(--primary-color);
+  box-shadow: 0 0 14px #20bd79aa;
+  user-select: none;
+  display: none;
 }
 
-
-/*------------------------------------------------------------
-Log Container Styling
-------------------------------------------------------------*/
+/* Log area */
 #logDiv {
-  background: var(--log-bg);
-  padding: 10px;
-  height: 140px;
-  overflow-y: auto;
+  background: #f9f0e3;
+  border: 2px solid #b55b2a;
+  border-radius: 12px;
   font-family: monospace;
-  font-size: 13px;
-  border-radius: 6px;
-  margin-top: 20px;
-  white-space: pre-line;
-  border: 1px solid #ccc;
-  user-select: text;
+  font-size: 14px;
+  max-height: 140px;
+  overflow-y: auto;
+  padding: 12px;
+  margin-top: 1rem;
+  color: #573815;
 }
-
 #logDiv div {
   opacity: 0;
   animation: fadeIn 0.6s forwards;
-  margin-bottom: 2px;
+  margin-bottom: 3px;
 }
-
 @keyframes fadeIn {
-  to {
-    opacity: 1;
-  }
+  to { opacity: 1; }
 }
 
-
-/*------------------------------------------------------------
-Entries Container and Entries Styling
-------------------------------------------------------------*/
-#dataContainer {
-  margin-top: 20px;
-  padding: 15px;
-  background: var(--card-bg);
-  border-radius: var(--border-radius);
-  max-height: 400px;
-  overflow-y: auto;
-  border: 1px solid #ddd;
-  box-shadow: var(--box-shadow);
-  font-size: 15px;
-  color: var(--primary-color);
-  user-select: text;
-}
-
-.ramadiv {
-  background: #d4e3fa;
-  padding: 8px 12px;
-  border-radius: 6px;
-  margin: 5px 5px 5px 0;
-  border: 1px solid #a2c4e7;
-  color: #174a8a;
-  display: inline-block;
-  white-space: nowrap;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-  transition: background-color 0.3s ease;
-  cursor: default;
-}
-
-.ramadiv:hover {
-  background-color: #b3cafc;
-  border-color: #1061e0;
-}
-
-
-/*------------------------------------------------------------
-Pagination Controls Styling
-------------------------------------------------------------*/
+/* Pagination */
 #paginationBar {
-  margin: 20px 0;
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 2rem 0 2.5rem;
   user-select: none;
 }
-
 #paginationBar button {
-  min-width: 90px;
-  background-color: var(--primary-color);
-  color: white;
+  background: #b55b2a;
   border: none;
-  border-radius: 6px;
-  padding: 8px 16px;
-  font-weight: 600;
-  font-size: 14px;
-  margin: 3px 6px;
+  border-radius: 12px;
+  color: white;
+  padding: 8px 20px;
+  font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 4px 8px rgba(23,105,170,0.4);
-  user-select: text;
-  -webkit-user-drag: none;
+  min-width: 90px;
+  transition: background 0.3s ease;
 }
-
 #paginationBar button:disabled {
-  opacity: 0.5;
+  background: #8f431d;
+  opacity: 0.7;
   cursor: default;
 }
-
-#paginationBar button:hover:not(:disabled) {
-  background-color: var(--primary-hover);
+#paginationBar button:hover:not(:disabled),
+#paginationBar button:focus:not(:disabled) {
+  background: #8b3e19;
+  outline: none;
 }
 
 #pageInfo {
-  font-weight: 600;
-  margin: 0 15px;
-  user-select: text;
-  -webkit-user-drag: none;
-}
-
-
-/*------------------------------------------------------------
-Progress Bar Styling
-------------------------------------------------------------*/
-progress#progressBar {
-  display: none;
-  -webkit-appearance: none;
-  appearance: none;
-  width: 100%;
-  height: 20px;
-  border-radius: 10px;
-  overflow: hidden;
-  margin: 20px auto 0;
-  background: #ddd;
-  transition: width 0.3s ease;
-}
-
-progress#progressBar::-webkit-progress-bar {
-  background: #ddd;
-  border-radius: 10px;
-}
-
-progress#progressBar::-webkit-progress-value {
-  background: var(--primary-color);
-  border-radius: 10px;
-  transition: width 0.3s ease;
-}
-
-progress#progressBar::-moz-progress-bar {
-  background: var(--primary-color);
-  border-radius: 10px;
-  transition: width 0.3s ease;
-}
-
-
-/*------------------------------------------------------------
-Install Popup Styling
-------------------------------------------------------------*/
-#installPopup {
-  display: none;
-  opacity: 0;
-  pointer-events: none;
-  position: fixed;
-  top: 15px;
-  right: 15px;
-  width: 290px;
-  background: var(--primary-color);
-  color: white;
-  padding: 18px 20px 14px;
-  border-radius: 16px 0 0 16px;
-  box-shadow: 0 2px 15px rgba(23,105,170,0.2);
-  font-weight: 600;
-  font-size: 14px;
-  z-index: 20000;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  transition: opacity 0.4s, transform 0.3s;
-  transform: translateX(100%);
-  box-sizing: border-box;
-  flex-wrap: nowrap;
-}
-
-#installPopup.active {
-  display: flex;
-  opacity: 0.95;
-  pointer-events: auto;
-  transform: translateX(0);
-}
-
-#installPopup span#installText {
-  flex-grow: 1;
-}
-
-#installPopup button {
-  background: white;
-  color: var(--primary-color);
-  border: none;
-  border-radius: 8px;
-  padding: 7px 16px;
+  background: #f3eee0;
+  padding: 8px 16px;
+  border-radius: 12px;
   font-weight: 700;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  min-width: 70px;
-}
-
-#installPopup button:hover {
-  background: #ddeeff;
-}
-
-#installPopup button.close-popup {
-  background: transparent;
-  color: white;
-  font-size: 22px;
-  border: none;
-  cursor: pointer;
-  margin-left: 8px;
-}
-
-#installPopup button.close-popup:hover {
-  color: #ffd746;
-}
-
-
-/*------------------------------------------------------------
-Toast Styling
-------------------------------------------------------------*/
-#toast {
-  position: fixed;
-  bottom: 30px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--primary-color);
-  color: white;
-  padding: 12px 24px;
-  border-radius: 24px;
-  font-weight: 600;
+  min-width: 110px;
+  color: #b55b2a;
+  text-align: center;
   user-select: none;
-  -webkit-user-drag: none;
-  opacity: 0;
-  pointer-events: none;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  z-index: 99999;
-  transition: opacity 0.3s ease;
 }
 
-#toast.visible {
-  opacity: 0.95;
-  pointer-events: auto;
+/* Data container */
+#dataContainer {
+  max-height: 270px;
+  overflow-y: auto;
+  border: 2px solid #ff490f;
+  border-radius: 12px;
+  padding: 15px;
+  background: #fff1dd;
+  font-weight: 700;
+  color: #762f0e;
+  user-select: text;
+  margin-top: 1.2rem;
 }
 
+/* Record block */
+.ramadiv {
+  display: inline-block;
+  padding: 6px 10px;
+  margin: 5px 5px 5px 0;
+  background: #c9dcfb;
+  border: 1px solid #99b7e6;
+  border-radius: 12px;
+  color: #2f4c8e;
+  font-size: 1.15rem;
+  white-space: nowrap;
+  box-shadow: 1px 2px 2px rgba(0,0,0,0.04);
+  cursor: default;
+  transition: background 0.3s ease;
+}
+.ramadiv:hover {
+  background: #a7bffa;
+  border-color: #3b57b1;
+}
 
-/*------------------------------------------------------------
-Scroll to Top Button Styling
-------------------------------------------------------------*/
-#goTopBtn {
-  display: none;
+/* Scroll-up button */
+#goTop {
   position: fixed;
-  bottom: 28px;
-  right: 26px;
-  background: transparent;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  user-select: none;
-  -webkit-user-drag: none;
-  opacity: 0;
-  pointer-events: none;
-  z-index: 9999;
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
-
-#goTopBtn.visible {
-  display: block;
-  opacity: 0.92;
-  pointer-events: auto;
-  transform: scale(1);
-}
-
-#goTopBtn:focus,
-#goTopBtn:hover {
-  outline: none;
-  transform: scale(1.08) rotate(-7deg);
-}
-
-#goTopBtn img.goTopImage {
-  width: 48px;
-  height: 48px;
+  bottom: 25px;
+  right: 25px;
+  width: 44px;
+  height: 44px;
+  background: #b55b2a;
+  color: white;
+  font-size: 26px;
+  text-align: center;
+  line-height: 44px;
   border-radius: 50%;
-  background: white;
-  border: 2px solid var(--primary-color);
-  box-shadow: 0 0 12px rgba(23,105,170,0.5);
-  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+  border: none;
+  cursor: pointer;
+  user-select: none;
+  display: none;
+  transition: background 0.3s ease;
+  z-index: 1000;
+}
+#goTop:hover, #goTop:focus {
+  background: #7a2c16;
+  outline: none;
 }
 
-#goTopBtn:hover img.goTopImage,
-#goTopBtn:focus img.goTopImage {
-  border-color: #ffd547;
-  box-shadow: 0 0 20px #ffd547cc;
-}
-
-
-/*------------------------------------------------------------
-Footer Styling
-------------------------------------------------------------*/
+/* Footer */
 #footer {
   text-align: center;
-  margin: 40px auto 0;
-  padding: 20px;
-  color: #666;
-  font-size: 14px;
-  border-top: 1px solid #ddd;
+  color: #6a3b11;
+  font-size: 0.9rem;
+  margin-top: 3rem;
+  border-top: 1px solid #e6dccb;
+  padding-top: 1rem;
   user-select: none;
-  -webkit-user-drag: none;
+}
+#footer a {
+  color: #b55b2a;
+  text-decoration: none;
+  font-weight: 600;
+}
+#footer a:hover, #footer a:focus {
+  text-decoration: underline;
+  outline: none;
 }
 
-
-/*------------------------------------------------------------
-Responsive Styles
-------------------------------------------------------------*/
+/* Responsive */
 @media (max-width: 600px) {
-  #menuBar button {
-    min-width: 90px;
-    margin: 6px 4px 12px;
-    padding: 8px 14px;
-  }
-
-  textarea#insertText {
-    font-size: 16px;
-    min-height: 70px;
-  }
-
-  #logDiv {
-    height: 110px;
-  }
-
-  #dataContainer {
-    max-height: 280px;
-  }
-
-  #goTopBtn {
-    bottom: 20px;
-    right: 18px;
-  }
-
-  #goTopBtn img.goTopImage {
-    width: 38px;
-    height: 38px;
-  }
-}
-
-
-/*------------------------------------------------------------
-Print Styles
-------------------------------------------------------------*/
-@media print {
-  ::-webkit-scrollbar {
-    display: none;
-  }
-
   body {
-    background: white;
-    color: black;
+    padding: 1rem 0.8rem 4rem;
   }
-
-  #menuBar,
-  #installPopup,
-  #goTopBtn,
-  #paginationBar,
-  #buttonsBar,
-  #exportBtn,
-  #toast {
-    display: none !important;
+  #menuBar {
+    flex-direction: column;
+    gap: 0.8rem;
+    margin-bottom: 1.5rem;
   }
-
-  section {
-    page-break-inside: avoid;
+  #buttonsBar, #paginationBar {
+    flex-direction: column;
+    gap: 1rem;
   }
-
-  button {
-    display: none;
+  #buttonsBar button, #paginationBar button {
+    width: 100%;
   }
-
-  #dataContainer,
-  #logDiv {
-    max-height: none !important;
-    overflow: visible;
+  #pageInfo {
+    min-width: auto;
+  }
+  #dataContainer {
+    max-height: 180px;
+  }
+  #goTop {
+    width: 36px;
+    height: 36px;
+    font-size: 22px;
   }
 }

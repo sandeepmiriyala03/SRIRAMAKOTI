@@ -1,109 +1,169 @@
-// sriramainsert.js - Web Worker for batch inserting data into IndexedDB
-
+// ===================================================================
+// sriramainsert.JS - Sri Rama Koti PWA
+// Author: Sandeep Miriyala (vanisandeep@gmail.com)
+// Repository: https://github.com/sandeepmiriyala03/SRIRAMAKOTI.git
+// ===================================================================
 let db = null;
+let cancelRequested = false;
 
-/**
- * Open or create the IndexedDB database and object store
- * @param {string} dbName 
- * @param {number} dbVersion 
- * @param {string} storeName 
- * @returns {Promise<IDBDatabase>}
- */
 function openDB(dbName, dbVersion, storeName) {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open(dbName, dbVersion);
-
-    request.onupgradeneeded = (event) => {
-      const database = event.target.result;
-      if (!database.objectStoreNames.contains(storeName)) {
-        database.createObjectStore(storeName, { keyPath: "id" });
-      }
-    };
-
-    request.onsuccess = (event) => {
-      resolve(event.target.result);
-    };
-
-    request.onerror = (event) => {
-      reject(event.target.error);
-    };
-  });
-}
-
-/**
- * Insert a batch of entries into the object store
- * @param {IDBDatabase} db 
- * @param {string} storeName 
- * @param {number} startId 
- * @param {number} endId 
- * @param {string} text 
- * @returns {Promise<{duration: number, inserted: number}>}
- */
-function insertBatch(db, storeName, startId, endId, text) {
-  return new Promise((resolve, reject) => {
-    const startTime = performance.now();
-    const transaction = db.transaction(storeName, "readwrite");
-    const store = transaction.objectStore(storeName);
-
-    for (let id = startId; id <= endId; id++) {
-      store.put({ id, text });
+    try {
+      const request = indexedDB.open(dbName, dbVersion);
+      request.onupgradeneeded = event => {
+        const database = event.target.result;
+        if (!database.objectStoreNames.contains(storeName)) {
+          database.createObjectStore(storeName, { keyPath: 'id' });
+        }
+      };
+      request.onsuccess = event => {
+        const database = event.target.result;
+        database.onversionchange = () => {
+          database.close();
+          self.postMessage({ error: 'Database outdated, please reload the app.' });
+        };
+        resolve(database);
+      };
+      request.onerror = event => reject(event.target.error);
+      request.onblocked = () => reject(new Error('Database open blocked'));
+    } catch (error) {
+      reject(error);
     }
-
-    transaction.oncomplete = () => {
-      const durationSec = (performance.now() - startTime) / 1000;
-      // Return cumulative inserted count
-      resolve({ duration: durationSec, inserted: endId });
-    };
-
-    transaction.onerror = (event) => reject(event.target.error);
-    transaction.onabort = (event) => reject(event.target.error);
   });
 }
 
-// Handle messages from main thread
-self.onmessage = async (e) => {
-  const {
-    DB_NAME,
-    STORE_NAME,
-    DB_VERSION,
-    TOTAL_ENTRIES,
-    BATCH_SIZE,
-    phrase = '', // Default empty string if not provided
-  } = e.data;
+async function insertBatch(database, storeName, startId, endId, text) {
+  return new Promise((resolve, reject) => {
+    try {
+      const startTime = performance.now();
+      const transaction = database.transaction(storeName, 'readwrite');
+      const store = transaction.objectStore(storeName);
+
+      let aborted = false;
+
+      transaction.oncomplete = () => {
+        if (!aborted) {
+          const duration = (performance.now() - startTime) / 1000;
+          resolve({ duration, inserted: endId });
+        }
+        // else reject handled on abort
+      };
+      transaction.onerror = event => {
+        reject(event.target.error);
+      };
+      transaction.onabort = event => {
+        aborted = true;
+        reject(new Error('Transaction aborted'));
+      };
+
+      // Insert in synchronous loop — no async awaits to keep transaction active
+      for (let id = startId; id <= endId; id++) {
+        if (cancelRequested) {
+          transaction.abort();
+          break; // stop inserting
+        }
+        store.put({ id, text });
+      }
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+
+function cleanup() {
+  if (db) {
+    try {
+      db.close();
+    } catch (_) {}
+    db = null;
+  }
+}
+
+function handleCancellation() {
+  cancelRequested = true;
+}
+
+self.onmessage = async event => {
+  const { DB_NAME, DB_VERSION, STORE_NAME, TOTAL_ENTRIES, BATCH_SIZE, phrase = '' } = event.data;
+
+  cancelRequested = false;
+
+  if (!DB_NAME || !DB_VERSION || !STORE_NAME || !TOTAL_ENTRIES || !BATCH_SIZE) {
+    self.postMessage({ error: 'Invalid parameters: Missing required configuration' });
+    return;
+  }
 
   try {
     db = await openDB(DB_NAME, DB_VERSION, STORE_NAME);
+    let totalProcessed = 0;
+    const startTime = performance.now();
 
     for (let i = 0; i < TOTAL_ENTRIES; i += BATCH_SIZE) {
+      if (cancelRequested) {
+        self.postMessage({ error: 'Insertion cancelled by user' });
+        break;
+      }
+
       const startId = i + 1;
       const endId = Math.min(i + BATCH_SIZE, TOTAL_ENTRIES);
+      const batchSize = endId - startId + 1;
 
-      const { duration, inserted } = await insertBatch(db, STORE_NAME, startId, endId, phrase);
+      try {
+        await insertBatch(db, STORE_NAME, startId, endId, phrase);
+        totalProcessed += batchSize;
 
-      self.postMessage({
-        inserted,
-        total: TOTAL_ENTRIES,
-        batchDurationSecs: duration.toFixed(2),
-      });
+        const elapsed = (performance.now() - startTime) / 1000;
+        const speed = totalProcessed / elapsed;
+        const eta = speed > 0 ? (TOTAL_ENTRIES - totalProcessed) / speed : 0;
+
+        self.postMessage({
+          inserted: totalProcessed,
+          total: TOTAL_ENTRIES,
+          batchDurationSecs: '', // optionally fill if you compute per batch duration elsewhere
+          progress: ((totalProcessed / TOTAL_ENTRIES) * 100).toFixed(1),
+          averageSpeed: speed.toFixed(0),
+          estimatedTime: Math.ceil(eta),
+          batchNumber: Math.ceil(totalProcessed / BATCH_SIZE),
+          totalBatches: Math.ceil(TOTAL_ENTRIES / BATCH_SIZE)
+        });
+      } catch (batchError) {
+        self.postMessage({
+          error: `Batch insertion failed: ${batchError.message}`,
+          failedAt: startId,
+          totalProcessed
+        });
+        break;
+      }
     }
 
-    // Signal insertion complete
-    self.postMessage({ done: true });
-
+    if (!cancelRequested && totalProcessed >= TOTAL_ENTRIES) {
+      const totalDuration = (performance.now() - startTime) / 1000;
+      self.postMessage({
+        done: true,
+        totalTime: totalDuration.toFixed(2),
+        totalRecords: TOTAL_ENTRIES
+      });
+    }
   } catch (error) {
-    self.postMessage({ error: error.message || error.toString() });
+    self.postMessage({
+      error: `Critical error: ${error.message || error.toString()}`,
+      stack: error.stack
+    });
+  } finally {
+    cleanup();
   }
 };
 
-// Catch-all error handler in the worker
-self.onerror = (error) => {
-  self.postMessage({ error: error.message || error.toString() });
+self.onerror = event => {
+  self.postMessage({ error: event.message });
+  cleanup();
 };
 
-// Optional cleanup on worker termination (if supported)
-self.onclose = () => {
-  if (db) {
-    db.close();
-    db = null;
-  }
+self.oncancel = () => {
+  handleCancellation();
+};
+
+self.onunhandledrejection = event => {
+  self.postMessage({ error: event.reason?.toString() || 'Unhandled rejection' });
+  event.preventDefault();
 };
