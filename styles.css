@@ -343,3 +343,10 @@ progress#progressBar::-moz-progress-bar {
     font-size: 22px;
   }
 }
+#menuBar button:focus:not(:disabled),
+#buttonsBar button:focus:not(:disabled),
+#paginationBar button:focus:not(:disabled),
+#goTop:focus {
+  outline: 3px solid #ff6b35; /* Or a contrasting accent color */
+  outline-offset: 2px;
+}

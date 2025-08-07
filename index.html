@@ -1,210 +1,184 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Sri Rama Koti</title>
-  <!-- Manifest for PWA -->
-  <link rel="manifest" href="manifest.json" />
-  <link rel="stylesheet" href="styles.css" />
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sri Rama Koti</title>
+  <!-- Manifest for PWA -->
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 
-  <!-- Hero Icon -->
-  <img src="icon-512.png" alt="Sri Rama Koti Lord Rama Icon" id="heroIcon" />
+  <!-- Navigation Menu -->
+  <nav id="menuBar" aria-label="Main navigation" role="navigation">
+    <button id="menuAbout" disabled>About Rama</button>
+    <button id="menuInsert">Write RamaKoti</button>
+    <button id="menuTools">Tools Used</button>
+    <button id="menuInstall" style="display:none;" aria-label="Install this app">Install App</button>
+  </nav>
 
-  <h1>🕉 Sri Rama Koti</h1>
+  <!-- Install App Popup -->
+  <div 
+    id="installPopup" 
+    role="dialog" 
+    aria-live="polite" 
+    aria-modal="true" 
+    aria-label="Install application prompt" 
+    style="display:none; position:fixed; top:20%; left:50%; transform: translateX(-50%); background:#fff; border-radius:8px; box-shadow:0 2px 10px rgba(0,0,0,0.2); padding:1rem; z-index:1000; max-width: 300px;"
+  >
+    <span id="installText">Install this app for a better experience.</span>
+    <div style="margin-top:1rem; display:flex; justify-content:flex-end; gap:0.5rem;">
+      <button id="installBtn" aria-label="Install application" style="padding:0.5rem 1rem;">Install</button>
+      <button id="installClose" aria-label="Close install prompt" style="padding:0.5rem 1rem;">×</button>
+    </div>
+  </div>
 
-  <!-- Navigation Menu -->
-  <nav id="menuBar" aria-label="Main navigation">
-    <button id="menuAbout" disabled>About Rama</button>
-    <button id="menuInsert">Write RamaKoti</button>
-    <button id="menuTools">Tools Used</button>
-    <button id="menuInstall" style="display:none;">Install App</button>
-  </nav>
+  <!-- About Rama Section (Visible by default) -->
+  <section id="aboutPage" role="region" aria-live="polite" aria-atomic="true" tabindex="0" style="padding:1rem;">
+    <h2>About Sri Rama</h2>
+    <p>రామాయ రామభద్రాయ రామచంద్రాయ వేధసే . రఘునాథాయ నాథాయ సితాయ</p>
+    <p>Lord Sri Rama is the seventh avatar of Vishnu, known for his righteousness and virtue.</p>
+    <h3>Spiritual Significance</h3>
+    <p>The epic Ramayana narrates his life, emphasizing dharma, devotion, and moral excellence. Rama's virtue inspires millions of devotees worldwide.</p>
+    <div>
+      <h3>What is Rama Koti?</h3>
+      <p>Rama Koti is a devotional practice where devotees write the name of Lord Rama one crore times, symbolizing their devotion and seeking blessings.</p>
+      <p>It is believed that this practice purifies the mind and soul, bringing peace and spiritual fulfillment.</p>
+      <p>In Telugu, it is known as "రామ కోటి" and in Hindi as "राम कोटि".</p>
+      <p>Devotees often write "జై శ్రీ రామ్" or "जय श्री रामः" as part of this practice, which translates to "Victory to Lord Rama".</p>
+      <p>Rama Koti is a way to express love and devotion towards Lord Rama, and it is performed with great reverence in many Hindu households.</p>
+      <p>It is said that writing Rama Koti brings peace, prosperity, and spiritual upliftment to the devotee.</p>
+      <p>Many believe it helps in overcoming obstacles and achieving success in life through Rama’s blessings.</p>
+      <p>Overall, Rama Koti is a beautiful expression of faith and devotion connecting devotees with Lord Rama.</p>
+      <p>For more info, see the <a href="https://en.wikipedia.org/wiki/Rama_Koti" target="_blank" rel="noopener noreferrer">Rama Koti Wikipedia page</a>.</p>
+    </div>
+  </section>
 
-  <!-- Install App Popup -->
-  <div id="installPopup" role="dialog" aria-live="polite" aria-label="Install application prompt" style="display:none;">
-    <span id="installText">Install this app for a better experience.</span>
-    <button id="installBtn" aria-label="Install Application">Install</button>
-    <button id="installClose" aria-label="Close install prompt">×</button>
-  </div>
+  <!-- Insert Section (Hidden Initially) -->
+  <section 
+    id="insertPage" 
+    role="region" 
+    aria-live="polite" 
+    aria-atomic="true" 
+    tabindex="0" 
+    style="display:none; padding:1rem;"
+  >
+    <h2>RAMA KOTI - Write 1 Crore Times</h2>
+    <p>
+      Writing Rama Koti means writing Lord Rama's name one crore (10 million) times. It is a powerful spiritual practice...
+    </p>
+    <p>రామ కోటి రాయడం అంటే రాముడి నామాన్ని కోటి (10 మిలియన్) సార్లు రాయడం...</p>
 
-  <!-- About Rama Section (Visible by Default) -->
-  <section id="aboutPage" role="region" aria-live="polite" aria-atomic="true" tabindex="0">
-    <h2>About Sri Rama</h2>
-    <p>రామాయ రామభద్రాయ రామచంద్రాయ వేధసే . రఘునాథాయ నాథాయ సితాయ</p>
-    <p>Lord Sri Rama is the seventh avatar of Vishnu, known for his righteousness and virtue.</p>
-    <h3>Spiritual Significance</h3>
-    <p>The epic Ramayana narrates his life, emphasizing dharma, devotion, and moral excellence. Rama's virtue inspires millions of devotees worldwide.</p>
-    <div>
-      <h3>What is Rama Koti?</h3>
-      <p>Rama Koti is a devotional practice where devotees write the name of Lord Rama one crore times, symbolizing their devotion and seeking blessings.</p>
-      <p>It is believed that this practice purifies the mind and soul, bringing peace and spiritual fulfillment.</p>
-      <p>In Telugu, it is known as "రామ కోటి" and in Hindi as "राम कोटि".</p>
-      <p>Devotees often write "జై శ్రీ రామ్" or "जय श्री रामः" as part of this practice, which translates to "Victory to Lord Rama".</p>
-      <p>Rama Koti is a way to express love and devotion towards Lord Rama, and it is performed with great reverence in many Hindu households.</p>
-      <p>It is said that writing Rama Koti brings peace, prosperity, and spiritual upliftment to the devotee.</p>
-      <p>Many people also believe that it helps in overcoming obstacles and achieving success in life through the blessings of Lord Rama.</p>
-      <p>Overall, Rama Koti is a beautiful expression of faith and devotion that connects devotees with the divine essence of Lord Rama.</p>
-      <p>For more information, visit the <a href="https://en.wikipedia.org/wiki/Rama_Koti" target="_blank" rel="noopener noreferrer">Rama Koti Wikipedia page</a>.</p>
-    </div>
-  </section>
+    <label for="insertText"><b>Rama Koti Phrase</b></label>
+    <textarea id="insertText" rows="3" aria-label="Rama Koti Phrase">JAI SRI RAM| జై శ్రీ రామ్|जय श्री राम</textarea>
 
-  <!-- Insert Section (Hidden Initially) -->
-  <section id="insertPage" role="region" aria-live="polite" aria-atomic="true" tabindex="0" style="display:none;">
-    <h2>RAMA KOTI - Write 1 Crore Times</h2>
-    <p>
-      Writing Rama Koti means writing Lord Rama's name one crore (10 million) times. It is a powerful spiritual practice that brings peace, focus, and positive energy. Traditionally done by hand, now you can write Rama Koti digitally, making it faster and easier while preserving the same blessings. Simply start the process and let your device help you complete this sacred journey.
-    </p>
-    <p>రామ కోటి రాయడం అంటే రాముడి నామాన్ని కోటి (10 మిలియన్) సార్లు రాయడం. ఇది శాంతి, దృష్టి మరియు సానుకూల శక్తిని తెచ్చే ఆధ్యాత్మిక సాధన. సాంప్రదాయకంగా చేతితో చేసే మీరు ఇప్పుడు రామ కోటిని డిజిటల్‌గా వ్రాయవచ్చు, వేగంగా మరియు సులభంగా.</p>
+    <div id="buttonsBar" aria-label="Insertion Controls" style="margin-top:1rem;">
+      <button id="startBtn" title="Insert 1 crore entries">Start Insertion</button>
+      <button id="cancelBtn" title="Cancel insertion" style="display:none;">Cancel</button>
+      <button id="deleteBtn" title="Delete database" disabled>Delete Database</button>
+      <button id="exportBtn" title="Export data" disabled>Export Data</button>
+    </div>
 
-    <label for="insertText"><b>Rama Koti Phrase</b></label>
-    <textarea id="insertText" rows="3" aria-label="Rama Koti Phrase">JAI SRI RAM| జై శ్రీ రామ్|जय श्री राम</textarea>
+    <progress id="progressBar" max="100" value="0" aria-label="Insertion progress" style="display:none; width:100%; margin-top:1rem;"></progress>
 
-    <div id="buttonsBar" aria-label="Insertion Controls">
-      <button id="startBtn" title="Insert 1 crore entries">Start Insertion</button>
-      <button id="cancelBtn" title="Cancel insertion" style="display:none;">Cancel</button>
-      <button id="deleteBtn" title="Delete database" disabled>Delete Database</button>
-      <button id="exportBtn" title="Export data" disabled>Export Data</button>
-    </div>
+    <p id="status" aria-live="polite" aria-atomic="true" style="margin-top:1rem;">Status: Ready</p>
 
-    <progress id="progressBar" max="100" value="0" aria-label="Insertion progress" style="display:none;"></progress>
+    <div 
+      id="milestoneDiv" 
+      role="alert" 
+      aria-live="assertive" 
+      aria-atomic="true" 
+      style="display:none; background: linear-gradient(45deg, #28a745, #20c997); color: white; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center; font-size: 1.2rem; font-weight: bold;"
+    >
+      🎉 Congratulations! 1 Crore entries inserted successfully! 🎉
+    </div>
 
-    <p id="status" aria-live="polite" aria-atomic="true">Status: Ready</p>
+    <p id="totalTime" aria-live="polite" aria-atomic="true" style="margin-top: 0.5rem;"></p>
 
-    <div id="milestoneDiv" role="alert" aria-live="assertive" aria-atomic="true" style="display:none; background: linear-gradient(45deg, #28a745, #20c997); color: white; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center; font-size: 1.2rem; font-weight: bold;">
-      🎉 Congratulations! 1 Crore entries inserted successfully! 🎉
-    </div>
+    <div 
+      id="logDiv" 
+      aria-live="polite" 
+      aria-atomic="false" 
+      tabindex="0" 
+      style="max-height: 120px; overflow: auto; border: 1px solid #ddd; padding: 10px; margin-top: 1rem;"
+    ></div>
 
-    <p id="totalTime" aria-live="polite" aria-atomic="true"></p>
+    <div 
+      id="paginationBar" 
+      aria-label="Pagination Controls" 
+      style="display:flex; justify-content:center; gap: 10px; flex-wrap:wrap; margin: 20px 0;"
+    >
+      <button id="firstPageBtn" disabled aria-label="First page">« First</button>
+      <button id="prevPageBtn" disabled aria-label="Previous page">‹ Prev</button>
+      <span 
+        id="pageInfo" 
+        aria-live="polite" 
+        aria-atomic="true" 
+        style="background: #f8f9fa; padding: 8px 16px; border-radius: 8px; font-weight: 600;"
+      >Page 0 / 0</span>
+      <button id="nextPageBtn" disabled aria-label="Next page">Next ›</button>
+      <button id="lastPageBtn" disabled aria-label="Last page">Last »</button>
+    </div>
 
-    <div id="logDiv" aria-live="polite" aria-atomic="false" tabindex="0" style="max-height: 120px; overflow: auto; border: 1px solid #ddd; padding: 10px;"></div>
+    <div 
+      id="dataContainer" 
+      aria-live="polite" 
+      aria-atomic="true" 
+      tabindex="0" 
+      style="max-height: 250px; overflow:auto; border: 2px solid #ff6b35; border-radius: 8px; padding: 15px;"
+    ></div>
+  </section>
 
-    <div id="paginationBar" aria-label="Pagination Controls" style="display:flex; justify-content:center; gap: 10px; flex-wrap:wrap; margin: 20px 0;">
-      <button id="firstPageBtn" disabled aria-label="First page">« First</button>
-      <button id="prevPageBtn" disabled aria-label="Previous page">‹ Prev</button>
-      <span id="pageInfo" aria-live="polite" aria-atomic="true" style="background: #f8f9fa; padding: 8px 16px; border-radius: 8px; font-weight: 600;">Page 0 / 0</span>
-      <button id="nextPageBtn" disabled aria-label="Next page">Next ›</button>
-      <button id="lastPageBtn" disabled aria-label="Last page">Last »</button>
-    </div>
+  <!-- Tools Section (Hidden Initially) -->
+  <section 
+    id="toolsPage" 
+    role="region" 
+    aria-live="polite" 
+    aria-atomic="true" 
+    tabindex="0" 
+    style="display:none; padding:1rem;"
+  >
+    <h2>Tools Used</h2>
+    <ul>
+      <li>IndexedDB for offline storage (batch size 50,000 for optimal performance)</li>
+      <li>Web Workers for background processing</li>
+      <li>Service Worker (PWA) for offline functionality</li>
+      <li>Modern Web technologies: HTML5, CSS3, JavaScript</li>
+      <li>Cross-browser compatibility (Chrome, Safari, Firefox, Edge)</li>
+      <li>Mobile-optimized responsive design</li>
+    </ul>
+    <h3>Database Information:</h3>
+    <ul>
+      <li><strong>Database Name:</strong> SriRamaDB</li>
+      <li><strong>Storage Type:</strong> IndexedDB (local browser storage)</li>
+      <li><strong>Batch Size:</strong> 50,000 entries per batch</li>
+      <li><strong>Page Size:</strong> 5,000 entries per page</li>
+      <li><strong>Maximum Capacity:</strong> 10,000,000 entries (1 Crore)</li>
+    </ul>
+  </section>
 
-    <div id="dataContainer" aria-live="polite" aria-atomic="true" tabindex="0" style="max-height: 250px; overflow:auto; border: 2px solid #ff6b35; border-radius: 8px; padding: 15px; margin-top: 10px;"></div>
-  </section>
+  <!-- Scroll to Top Button -->
+  <button 
+    id="goTop" 
+    aria-label="Scroll to top" 
+    role="button" 
+    tabindex="0" 
+    style="display:none; position: fixed; bottom: 20px; right: 20px; background: #b85c38; color: white; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 24px; cursor: pointer;"
+  >↑</button>
 
-  <!-- Tools Section (Hidden Initially) -->
-  <section id="toolsPage" role="region" aria-live="polite" aria-atomic="true" tabindex="0" style="display:none;">
-    <h2>Tools Used</h2>
-    <ul>
-      <li>IndexedDB for offline storage (50,000 batch size for optimal performance)</li>
-      <li>Web Workers for background processing</li>
-      <li>Service Worker (PWA) for offline functionality</li>
-      <li>Modern Web technologies: HTML5, CSS3, JavaScript</li>
-      <li>Cross-browser compatibility (Chrome, Safari, Firefox, Edge)</li>
-      <li>Mobile-optimized responsive design</li>
-    </ul>
-    <h3>Database Information:</h3>
-    <ul>
-      <li><strong>Database Name:</strong> SriRamaDB</li>
-      <li><strong>Storage Type:</strong> IndexedDB (local browser storage)</li>
-      <li><strong>Batch Size:</strong> 50,000 entries per batch</li>
-      <li><strong>Page Size:</strong> 5,000 entries per page</li>
-      <li><strong>Maximum Capacity:</strong> 10,000,000 entries (1 Crore)</li>
-    </ul>
-  </section>
+  <!-- Live Status Region (for screen readers) -->
+  <div id="ariaStatus" aria-live="polite" aria-atomic="true" style="position:absolute; left:-9999px; height:1px; width:1px; overflow:hidden;"></div>
 
-  <!-- Scroll to Top Button -->
-  <button id="goTop" aria-label="Scroll to top" role="button" tabindex="0" style="display:none; position: fixed; bottom: 20px; right: 20px; background: #b85c38; color: white; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 24px; cursor: pointer;">↑</button>
+  <!-- Footer -->
+  <footer id="footer" role="contentinfo" aria-label="Site Footer" style="margin-top: 2rem; text-align: center; color: #b85c38cc; font-size: 0.9rem;">
+    <p>
+      &copy; 2025 Sandeep Miriyala | 
+      <a href="mailto:vanisandeep@gmail.com">Contact Me</a>
+    </p>
+  </footer>
 
-  <!-- Footer -->
-  <footer id="footer" role="contentinfo" aria-label="Site Footer" style="margin-top: 2rem; text-align: center; color: #b85c38cc; font-size: 0.9rem;">
-    <p>
-      &copy; 2025 Sandeep Miriyala |
-      <a href="https://github.com/sandeepmiriyala03/SRIRAMAKOTI.git" target="_blank" rel="noopener noreferrer">Source Code</a> |
-      <a href="mailto:vanisandeep@gmail.com">Contact Me</a>
-    </p>
-  </footer>
-
-  <!-- Main JavaScript -->
-  <script src="main.js" defer></script>
-
-  <!-- PWA Install Prompt and Service Worker -->
-  <script>
-    (function() {
-      const menuInstallBtn = document.getElementById('menuInstall');
-      const installPopup = document.getElementById('installPopup');
-      const installBtn = document.getElementById('installBtn');
-      const installClose = document.getElementById('installClose');
-      const installText = document.getElementById('installText');
-      let deferredPrompt;
-
-      function isAppInstalled() {
-        return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-      }
-
-      window.addEventListener('load', () => {
-        if (isAppInstalled() && menuInstallBtn) menuInstallBtn.style.display = 'none';
-      });
-
-      window.addEventListener('beforeinstallprompt', e => {
-        e.preventDefault();
-        deferredPrompt = e;
-        if (menuInstallBtn && !isAppInstalled()) menuInstallBtn.style.display = 'inline-block';
-      });
-
-      if (menuInstallBtn) {
-        menuInstallBtn.onclick = () => {
-          if (isAppInstalled()) {
-            menuInstallBtn.style.display = 'none';
-            return;
-          }
-          installPopup.style.display = 'block';
-          if (deferredPrompt) {
-            installText.textContent = 'Install this app for a better experience.';
-            installBtn.style.display = 'inline-block';
-          } else if (/iphone|ipad|ipod/i.test(navigator.userAgent)) {
-            installText.innerHTML = 'On iPhone/iPad, tap the Share icon and then "Add to Home Screen".';
-            installBtn.style.display = 'none';
-          } else {
-            installText.textContent = "Use your browser menu's 'Add to Home Screen'";
-            installBtn.style.display = 'none';
-          }
-        };
-      }
-
-      if (installBtn) {
-        installBtn.onclick = async () => {
-          if (!deferredPrompt) return;
-          installPopup.style.display = 'none';
-          deferredPrompt.prompt();
-          const choice = await deferredPrompt.userChoice;
-          if (choice.outcome === 'accepted' && menuInstallBtn) menuInstallBtn.style.display = 'none';
-          deferredPrompt = null;
-        };
-      }
-
-      if (installClose) {
-        installClose.onclick = () => {
-          installPopup.style.display = 'none';
-        };
-      }
-
-      document.addEventListener('click', e => {
-        if (installPopup.style.display === 'block' && !installPopup.contains(e.target) && e.target !== menuInstallBtn) {
-          installPopup.style.display = 'none';
-        }
-      });
-
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').then(() => {
-          console.log('Service Worker registered.');
-        }).catch(err => {
-          console.error('Service Worker registration failed:', err);
-        });
-      }
-    })();
-  </script>
-
+  <script src="installpopup.js" defer></script>
+  <script src="main.js" defer></script>
 </body>
 </html>

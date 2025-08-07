@@ -1,413 +1,450 @@
 // ===================================================================
 // MAIN.JS - Sri Rama Koti PWA
-// Author: Sandeep Miriyala (vanisandeep@gmail.com)
-// Repository: https://github.com/sandeepmiriyala03/SRIRAMAKOTI.git
+// Author: Sandeep Mirala
+// Repository: https://github.com/sandeepmirala/SRIRAMAKI
 // ===================================================================
 
-// ===== CONFIGURATION CONSTANTS =====
-const DB_NAME = 'SriRamaDB';
-const STORE_NAME = 'sriStore';
-const DB_VERSION = 1;
-const TOTAL_ENTRIES = 10000000;
-const BATCH_SIZE = 50000;
-const PAGE_SIZE = 5000;
+// ===================================================================
+// MAIN.JS - Sri Rama Koti PWA
+// Author: Your Name or Sandeep
+// ===================================================================
 
-// ===== APPLICATION STATE =====
+// Configuration
+const DB_NAME = "SriRamaDB";
+const STORE_NAME = "sriStore";
+const DB_VERSION = 1;
+const TOTAL_ENTRIES = 10_000_000; // 1 Crore
+const BATCH_SIZE = 50_000;
+const PAGE_SIZE = 5_000;
+
+// Global state
 let db = null;
 let worker = null;
+let batchInserted = 0;
 let currentPage = 0;
 let totalPages = 0;
 let isInserting = false;
 let cancelRequested = false;
-let batchInserted = 0;
-let lastInsertedPhrase = '';
+let lastPhrase = "";
 let milestoneShown = false;
 
-// ===== CACHED DOM ELEMENTS =====
+// DOM cache helper
 const elements = {};
+const $ = (id) => document.getElementById(id);
 
-// ===== UTILITY FUNCTIONS =====
-const $ = id => document.getElementById(id);
-
+// Utility functions
 function formatNumberIndian(num) {
-  if (num < 100000) return num.toLocaleString();
-  if (num < 10000000) return (num / 100000).toFixed(0) + ' Lakh';
-  return (num / 10000000).toFixed(1) + ' Crore';
+  if (num < 100_000) return num.toLocaleString();
+  if (num < 10_000_000) return (num / 100_000).toFixed(0) + " Lakh";
+  return (num / 10_000_000).toFixed(1) + " Crore";
 }
-
 function formatDuration(ms) {
-  const secs = Math.floor(ms / 1000),
-    h = Math.floor(secs / 3600),
-    m = Math.floor((secs % 3600) / 60),
-    s = secs % 60;
+  const secs = Math.floor(ms / 1000);
+  const h = Math.floor(secs / 3600);
+  let rem = secs % 3600;
+  const m = Math.floor(rem / 60);
+  const s = rem % 60;
   const parts = [];
-  if (h) parts.push(`${h} hour${h > 1 ? 's' : ''}`);
-  if (m) parts.push(`${m} minute${m > 1 ? 's' : ''}`);
-  if (s || !parts.length) parts.push(`${s} second${s > 1 ? 's' : ''}`);
-  return parts.join(' ');
+  if (h) parts.push(`${h} hour${h > 1 ? "s" : ""}`);
+  if (m) parts.push(`${m} minute${m > 1 ? "s" : ""}`);
+  if (s || parts.length === 0) parts.push(`${s} second${s > 1 ? "s" : ""}`);
+  return parts.join(" ");
 }
-
 function log(text) {
   if (!elements.logDiv) return;
-  const div = document.createElement('div');
+  const div = document.createElement("div");
   div.textContent = text;
-  div.style.opacity = 0;
+  div.style.opacity = "0";
   elements.logDiv.appendChild(div);
-  requestAnimationFrame(() => (div.style.opacity = 1));
+  requestAnimationFrame(() => (div.style.opacity = "1"));
   elements.logDiv.scrollTop = elements.logDiv.scrollHeight;
 }
-
-function updateStatus(text, withSpinner = false) {
+function updateStatus(text, spinner = false) {
   if (!elements.status) return;
-  elements.status.innerHTML = withSpinner
+  elements.status.innerHTML = spinner
     ? `${text} <span class="ellipsis" aria-hidden="true"></span>`
     : text;
 }
-
-// Show or hide pagination panel
 function showPaging(show) {
-  if (elements.paginationBar) elements.paginationBar.style.display = show ? '' : 'none';
+  if (elements.paginationBar) elements.paginationBar.style.display = show ? "" : "none";
 }
-
-// Show or hide data container, clear if hiding
-function showDataContainer(show) {
+function showData(show) {
   if (elements.dataContainer) {
-    elements.dataContainer.style.display = show ? '' : 'none';
-    if (!show) elements.dataContainer.innerHTML = '';
+    elements.dataContainer.style.display = show ? "" : "none";
+    if (!show) elements.dataContainer.innerHTML = "";
   }
 }
-
-// Enable or disable all pagination buttons
-function enablePagination(enabled) {
-  ['first', 'prev', 'next', 'last'].forEach(key => {
-    const btn = elements[key + 'PageBtn'];
-    if (btn) btn.disabled = !enabled;
+function enablePagination(enable) {
+  ["first", "prev", "next", "last"].forEach((key) => {
+    const btn = elements[`${key}PageBtn`];
+    if (btn) btn.disabled = !enable;
   });
 }
-
-// Update pagination buttons and page info
 function updatePagination() {
   const { firstPageBtn, prevPageBtn, nextPageBtn, lastPageBtn, pageInfo } = elements;
   if (!(firstPageBtn && prevPageBtn && nextPageBtn && lastPageBtn && pageInfo)) return;
-  const show = batchInserted >= TOTAL_ENTRIES && batchInserted > 0;
-  showPaging(show);
-  showDataContainer(show);
 
-  if (batchInserted === 0 || totalPages === 0) {
-    [firstPageBtn, prevPageBtn, nextPageBtn, lastPageBtn].forEach(btn => (btn.disabled = true));
-    pageInfo.textContent = 'Page 0 / 0';
-  } else {
-    const enabled = batchInserted >= TOTAL_ENTRIES && totalPages > 0;
-    firstPageBtn.disabled = !enabled || currentPage === 0;
-    prevPageBtn.disabled = !enabled || currentPage === 0;
-    nextPageBtn.disabled = !enabled || currentPage >= totalPages - 1;
-    lastPageBtn.disabled = !enabled || currentPage >= totalPages - 1;
-    pageInfo.textContent = `Page ${currentPage + 1} / ${totalPages}`;
+  const hasData = batchInserted > 0 && totalPages > 0;
+  showPaging(hasData);
+  showData(hasData);
+  if (!hasData) {
+    [firstPageBtn, prevPageBtn, nextPageBtn, lastPageBtn].forEach((btn) => (btn.disabled = true));
+    pageInfo.textContent = "Page 0 / 0";
+    enablePagination(false);
+    return;
   }
+  const canPaginate = batchInserted >= TOTAL_ENTRIES && totalPages > 0;
+
+  firstPageBtn.disabled = !canPaginate || currentPage === 0;
+  prevPageBtn.disabled = !canPaginate || currentPage === 0;
+  nextPageBtn.disabled = !canPaginate || currentPage === totalPages - 1;
+  lastPageBtn.disabled = !canPaginate || currentPage === totalPages - 1;
+
+  pageInfo.textContent = `Page ${currentPage + 1} / ${totalPages}`;
+  enablePagination(canPaginate);
 }
 
-// Open or create IndexedDB database with proper upgrade handling
+// Open/create IndexedDB database
 async function openDB() {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.onupgradeneeded = e => {
-      const dbase = e.target.result;
-      if (!dbase.objectStoreNames.contains(STORE_NAME)) {
-        dbase.createObjectStore(STORE_NAME, { keyPath: 'id' });
+    let upgraded = false;
+
+    req.onupgradeneeded = (event) => {
+      const dbInstance = event.target.result;
+      if (!dbInstance.objectStoreNames.contains(STORE_NAME)) {
+        dbInstance.createObjectStore(STORE_NAME, { keyPath: "id" });
+        upgraded = true;
       }
     };
-    req.onsuccess = e => {
-      db = e.target.result;
+
+    req.onsuccess = (event) => {
+      db = event.target.result;
       db.onversionchange = () => {
-        if (!db.objectStoreNames.contains(STORE_NAME)) {
-          db.close();
-          db = null;
-          updateStatus('Database connection lost or outdated, please reload.');
-        }
+        updateStatus("Database outdated, please reload.");
+        db.close();
+        db = null;
       };
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.close();
+        reject(new Error("Object store missing"));
+        return;
+      }
       resolve(db);
     };
-    req.onerror = e => reject(e.target.error);
-    req.onblocked = () => updateStatus('Database open blocked, close other tabs');
+
+    req.onerror = (event) => reject(event.target.error);
+
+    req.onblocked = () => updateStatus("Database open blocked, close other tabs.");
   });
 }
 
-// Load and render a given page of records
-function loadPage(page) {
-  if (!db) {
-    updateStatus('Database not initialized.');
-    return;
-  }
-  if (!elements.dataContainer) {
-    console.warn('Data container element missing.');
-    return;
-  }
-  if (batchInserted < TOTAL_ENTRIES) {
-    showDataContainer(false);
-    return;
-  }
-  if (!totalPages) totalPages = 0;
-  if (totalPages === 0) {
-    elements.dataContainer.innerHTML = '<p style="text-align:center;color:#666;">No data available.</p>';
-    updateStatus('No data available to display.');
-    updatePagination();
-    return;
-  }
-  if (page < 0) page = 0;
-  if (page >= totalPages) page = totalPages - 1;
-  currentPage = page;
+// Delete IndexedDB and caches silently
+async function deleteDatabase(confirmDelete = true) {
+  if (confirmDelete && !confirm("Delete all data? This is irreversible.")) return false;
 
-  elements.dataContainer.innerHTML = '<p style="text-align:center;color:#666;"><span class="ellipsis">Loading page data</span></p>';
-  showDataContainer(true);
-
-  const startId = page * PAGE_SIZE + 1;
-  const maxId = Math.min(batchInserted, TOTAL_ENTRIES);
-  if (startId > maxId) {
-    elements.dataContainer.innerHTML = '<p style="text-align:center;color:#666;">Page data not available yet, please wait.</p>';
-    updateStatus('Page data not available.');
-    updatePagination();
-    return;
-  }
-
-  const endId = Math.min(startId + PAGE_SIZE - 1, maxId);
-  updateStatus(`Loading page ${page + 1} (IDs ${startId.toLocaleString()} - ${endId.toLocaleString()})`);
+  if (elements.deleteBtn) elements.deleteBtn.disabled = true;
+  updateStatus("Deleting database...");
+  log("Deletion started.");
 
   try {
-    const txn = db.transaction(STORE_NAME, 'readonly');
+    if (worker) {
+      worker.terminate();
+      worker = null;
+      isInserting = false;
+      cancelRequested = false;
+    }
+    if (db) {
+      db.close();
+      db = null;
+    }
+    let req = indexedDB.deleteDatabase(DB_NAME);
+    req.onerror = () => {
+      updateStatus("Failed to delete database.");
+      if (elements.deleteBtn) elements.deleteBtn.disabled = false;
+    };
+    req.onblocked = () => {
+      updateStatus("Deletion blocked; close other tabs.");
+      if (elements.deleteBtn) elements.deleteBtn.disabled = false;
+    };
+    req.onsuccess = () => {
+      updateStatus("Database deleted.");
+      log("Database deletion success.");
+      clearUI();
+      setTimeout(() => {
+        setInsertState("ready");
+      }, 100);
+    };
+    if ("caches" in window) {
+      caches.keys().then((keys) => Promise.all(keys.map((k) => caches.delete(k))));
+      log("Cache storage cleared.");
+    }
+    return true;
+  } catch (err) {
+    updateStatus(`Deletion error: ${err.message}`);
+    if (elements.deleteBtn) elements.deleteBtn.disabled = false;
+    return false;
+  }
+}
+
+// Load page data and display
+function loadPage(page) {
+  if (!db || batchInserted < TOTAL_ENTRIES) {
+    showPaging(false);
+    showData(false);
+    updateStatus("No data available.");
+    return;
+  }
+
+  if (page < 0) page = 0;
+  else if (page >= totalPages) page = totalPages - 1;
+
+  currentPage = page;
+  showPaging(true);
+  showData(true);
+  elements.dataContainer.innerHTML = "<p>Loading...</p>";
+  updateStatus(`Loading page ${page + 1}...`);
+
+  try {
+    const txn = db.transaction(STORE_NAME, "readonly");
     const store = txn.objectStore(STORE_NAME);
-    const req = store.openCursor(IDBKeyRange.bound(startId, endId));
-    const frag = document.createDocumentFragment();
+    const range = IDBKeyRange.bound(page * PAGE_SIZE + 1, Math.min(batchInserted, (page + 1) * PAGE_SIZE));
+    const req = store.openCursor(range);
     let count = 0;
+    const frag = document.createDocumentFragment();
 
     req.onerror = () => {
-      updateStatus('Failed to load data.');
-      elements.dataContainer.innerHTML = '<p style="text-align:center;color:#d00;">Failed to load data.</p>';
+      updateStatus("Failed to load page data.");
+      elements.dataContainer.innerHTML = "<p style='color:red;'>Error loading data.</p>";
     };
-    req.onsuccess = e => {
-      const cursor = e.target.result;
+
+    req.onsuccess = (evt) => {
+      let cursor = evt.target.result;
       if (cursor) {
-        const div = document.createElement('div');
-        div.className = 'ramadiv';
+        let div = document.createElement("div");
+        div.className = "ramadiv";
         div.textContent = `${cursor.value.text} (ID: ${cursor.value.id.toLocaleString()})`;
         frag.appendChild(div);
         count++;
         cursor.continue();
       } else {
         if (count === 0) {
-          elements.dataContainer.innerHTML = '<p style="text-align:center;color:#666;">No records on this page.</p>';
-          updateStatus('No records found on this page.');
+          elements.dataContainer.textContent = "No records on this page";
+          updateStatus("No data found on page.");
         } else {
-          elements.dataContainer.innerHTML = '';
+          elements.dataContainer.innerHTML = "";
           elements.dataContainer.appendChild(frag);
-          updateStatus(`Showing ${count} entries on page ${page + 1}`);
+          updateStatus(`Showing ${count} records on page ${page + 1}`);
         }
         updatePagination();
       }
     };
-  } catch (error) {
-    updateStatus('Error loading page data.');
-    console.error(error);
+  } catch (err) {
+    updateStatus(`Error loading page: ${err.message}`);
   }
 }
 
-// Pagination control functions
+// Pagination handlers
 function goFirst() {
-  if (totalPages && batchInserted >= TOTAL_ENTRIES && currentPage > 0) {
+  if (currentPage > 0) {
+    loadPage(0);
     currentPage = 0;
-    loadPage(currentPage);
     updatePagination();
   }
 }
 function goPrev() {
-  if (totalPages && batchInserted >= TOTAL_ENTRIES && currentPage > 0) {
+  if (currentPage > 0) {
+    loadPage(currentPage - 1);
     currentPage--;
-    loadPage(currentPage);
     updatePagination();
   }
 }
 function goNext() {
-  if (totalPages && batchInserted >= TOTAL_ENTRIES && currentPage < totalPages - 1) {
+  if (currentPage < totalPages - 1) {
+    loadPage(currentPage + 1);
     currentPage++;
-    loadPage(currentPage);
     updatePagination();
   }
 }
 function goLast() {
-  if (totalPages && batchInserted >= TOTAL_ENTRIES && currentPage < totalPages - 1) {
+  if (currentPage < totalPages - 1) {
+    loadPage(totalPages - 1);
     currentPage = totalPages - 1;
-    loadPage(currentPage);
     updatePagination();
   }
 }
 
-// Navigation between sections
+// Section navigation
 function showSection(section) {
-  ['aboutPage', 'insertPage', 'toolsPage'].forEach(id => {
-    if (elements[id]) elements[id].style.display = id === section + 'Page' ? 'block' : 'none';
+  ["about", "insert", "tools"].forEach((key) => {
+    if (elements[key + "Page"]) {
+      elements[key + "Page"].style.display = key === section ? "block" : "none";
+    }
   });
-  if (elements.menuAbout) elements.menuAbout.disabled = section === 'about';
-  if (elements.menuInsert) elements.menuInsert.disabled = section === 'insert';
-  if (elements.menuTools) elements.menuTools.disabled = section === 'tools';
-}
-
-// Insertion UI states
-function setInsertState(state) {
-  if (!elements.startBtn || !elements.cancelBtn || !elements.progressBar) return;
-  switch (state) {
-    case 'ready':
-      elements.startBtn.disabled = false;
-      elements.startBtn.textContent = 'Start Insertion';
-      elements.startBtn.classList.remove('working');
-      elements.cancelBtn.style.display = 'none';
-      elements.cancelBtn.disabled = false;
-      elements.progressBar.style.display = 'none';
-      if (elements.deleteBtn) elements.deleteBtn.disabled = true;
-      if (elements.exportBtn) elements.exportBtn.disabled = true;
-      break;
-    case 'inserting':
-      elements.startBtn.disabled = true;
-      elements.startBtn.textContent = 'Inserting...';
-      elements.startBtn.classList.add('working');
-      elements.cancelBtn.style.display = 'inline-block';
-      elements.cancelBtn.disabled = false;
-      elements.progressBar.style.display = 'block';
-      if (elements.deleteBtn) elements.deleteBtn.disabled = true;
-      if (elements.exportBtn) elements.exportBtn.disabled = true;
-      break;
-    case 'done':
-      elements.startBtn.disabled = true;
-      elements.startBtn.textContent = 'Completed ✓';
-      elements.startBtn.classList.remove('working');
-      elements.cancelBtn.style.display = 'none';
-      elements.cancelBtn.disabled = true;
-      elements.progressBar.style.display = 'none';
-      if (elements.deleteBtn) elements.deleteBtn.disabled = false;
-      if (elements.exportBtn) elements.exportBtn.disabled = false;
-      break;
-  }
+  ["About", "Insert", "Tools"].forEach((label) => {
+    let btn = elements["menu" + label];
+    if (btn) btn.disabled = label.toLowerCase() === section;
+  });
 }
 
 // Input validation
 function validateInput() {
   if (!elements.insertText) return false;
-  const val = elements.insertText.value.trim();
+  let val = elements.insertText.value.trim();
   if (val.length < 4) {
-    updateStatus('Please enter at least 4 characters in phrase.');
+    updateStatus("Please enter at least 4 characters in phrase.");
     elements.insertText.focus();
     return false;
   }
   return true;
 }
 
+// Update UI state for insertion actions
+function setInsertState(state) {
+  const { startBtn, cancelBtn, progressBar, deleteBtn, exportBtn } = elements;
+  if (!(startBtn && cancelBtn && progressBar)) return;
+  switch (state) {
+    case "ready":
+      startBtn.disabled = false;
+      startBtn.textContent = "Start";
+      startBtn.classList.remove("working");
+      cancelBtn.style.display = "none";
+      cancelBtn.disabled = false;
+      progressBar.style.display = "none";
+      if (deleteBtn) deleteBtn.disabled = true;
+      if (exportBtn) exportBtn.disabled = true;
+      break;
+    case "inserting":
+      startBtn.disabled = true;
+      startBtn.textContent = "Inserting...";
+      startBtn.classList.add("working");
+      cancelBtn.style.display = "";
+      cancelBtn.disabled = false;
+      progressBar.style.display = "";
+      if (deleteBtn) deleteBtn.disabled = true;
+      if (exportBtn) exportBtn.disabled = true;
+      break;
+    case "done":
+      startBtn.disabled = true;
+      startBtn.textContent = "Completed ✓";
+      startBtn.classList.remove("working");
+      cancelBtn.style.display = "none";
+      cancelBtn.disabled = true;
+      progressBar.style.display = "none";
+      if (deleteBtn) deleteBtn.disabled = false;
+      if (exportBtn) exportBtn.disabled = false;
+      break;
+  }
+}
+
 // Start insertion process
 async function startInsertion() {
-  if (isInserting) {
-    updateStatus('Insertion already in progress.');
-    return;
-  }
+  if (isInserting) return;
   if (!validateInput()) return;
 
-  const currPhrase = elements.insertText.value.trim() || 'JAI SRI RAM| జై శ్రీ రామ్|जय श्री राम';
-
-  // If phrase changed, clear existing DB first
-  if (lastInsertedPhrase && lastInsertedPhrase !== currPhrase) {
+  if (!db) {
+    try {
+      await openDB();
+    } catch (e) {
+      updateStatus(`Failed to open DB: ${e.message}`);
+      return;
+    }
+  }
+  let phrase = elements.insertText.value.trim();
+  if (phrase !== lastPhrase && lastPhrase !== "") {
     await deleteDatabase(true);
+    try {
+      await openDB();
+    } catch (e) {
+      updateStatus(`Failed to reopen DB: ${e.message}`);
+      return;
+    }
   }
-  lastInsertedPhrase = currPhrase;
+  lastPhrase = phrase;
 
-  // Terminate existing worker aggressively before starting new
-  if (worker) {
-    worker.terminate();
-    worker = null;
-  }
+  if (worker) worker.terminate();
 
   cancelRequested = false;
   clearUI();
-  updateStatus('Starting insertion...', true);
-  setInsertState('inserting');
+  updateStatus("Starting insertion...", true);
+  setInsertState("inserting");
   isInserting = true;
   batchInserted = 0;
   milestoneShown = false;
-  const startTime = performance.now();
 
-  if (elements.progressBar) elements.progressBar.value = 0;
+  let startTime = performance.now();
 
-  // Create new worker
-  worker = new Worker('sriramainsert.js');
-  worker.postMessage({ DB_NAME, STORE_NAME, DB_VERSION, TOTAL_ENTRIES, BATCH_SIZE, phrase: currPhrase });
+  worker = new Worker("SriramaInsert.js", { type: "module" }  );
+  worker.postMessage({ DB_NAME, STORE_NAME, DB_VERSION, TOTAL_ENTRIES, BATCH_SIZE, phrase });
 
   worker.onmessage = async (e) => {
     if (e.data.error) {
-      log(`Error: ${e.data.error}`);
-
-      // If error indicates DB closing, cancel insertion gracefully
-      if (e.data.error.includes("transaction on 'IDBDatabase': The database connection is closing")) {
-        updateStatus('Database connection is closing. Cancelling insertion...', false);
-      } else {
-        updateStatus('Insertion failed', false);
-      }
-
-      setInsertState('ready');
+      log(`Worker error: ${e.data.error}`);
+      updateStatus(`Worker error: ${e.data.error}`);
+      setInsertState("ready");
       isInserting = false;
-      cancelRequested = false;
-      worker.terminate();
-      worker = null;
+      if (worker) {
+        worker.terminate();
+        worker = null;
+      }
       return;
     }
-
-    if (e.data.inserted) {
+    if (typeof e.data.inserted === "number") {
       batchInserted = e.data.inserted;
 
-      if (batchInserted >= TOTAL_ENTRIES && !milestoneShown) {
+      if (!milestoneShown && batchInserted >= TOTAL_ENTRIES) {
         milestoneShown = true;
-        if (elements.milestoneDiv) elements.milestoneDiv.style.display = 'block';
-        updateStatus('🎉 1 Crore entries completed! Congratulations!', false);
+        if (elements.milestoneDiv) elements.milestoneDiv.style.display = "";
+        updateStatus("🎉 1 Crore insertion complete!");
       }
 
-      const elapsed = (performance.now() - startTime) / 1000;
-      const speed = batchInserted / elapsed;
-      const eta = (TOTAL_ENTRIES - batchInserted) / speed;
+      let elapsed = (performance.now() - startTime) / 1000;
+      let speed = batchInserted / elapsed;
+      let eta = speed ? (TOTAL_ENTRIES - batchInserted) / speed : 0;
 
       if (batchInserted % (BATCH_SIZE * 5) === 0 || batchInserted === TOTAL_ENTRIES) {
-        log(`Inserted ${formatNumberIndian(batchInserted)} entries (batch took ${e.data.batchDurationSecs}s)`);
-        updateStatus(`Inserted ${formatNumberIndian(batchInserted)} / ${formatNumberIndian(TOTAL_ENTRIES)} entries - Speed: ${speed.toFixed(2)} / sec - ETA: ${Math.ceil(eta / 60)} min`, true);
+        log(
+          `Inserted ${formatNumberIndian(batchInserted)} entries (batch ${e.data.batchNumber}/${e.data.totalBatches}) - ${e.data.batchDurationSecs}s`
+        );
+        updateStatus(
+          `Inserted ${formatNumberIndian(batchInserted)} / ${formatNumberIndian(TOTAL_ENTRIES)} at ${speed.toFixed(
+            2
+          )} req/sec - ETA ${Math.ceil(eta)}s`,
+          true
+        );
         if (elements.progressBar) elements.progressBar.value = Math.min(100, (batchInserted / TOTAL_ENTRIES) * 100);
       }
 
       if (batchInserted >= TOTAL_ENTRIES) {
-        enablePagination(true);
         totalPages = Math.ceil(TOTAL_ENTRIES / PAGE_SIZE);
         currentPage = 0;
         await openDB();
         loadPage(currentPage);
         updatePagination();
+        enablePagination(true);
       }
     }
-
     if (e.data.done) {
-      const totalTime = performance.now() - startTime;
-      log('Insertion complete!');
-      updateStatus(`Insertion completed in ${formatDuration(totalTime)}`, false);
-      if (elements.total) elements.total.textContent = `Total time: ${formatDuration(totalTime)}`;
+      let totalDuration = performance.now() - startTime;
+      log("Insertion complete");
+      updateStatus(`Insertion finished in ${formatDuration(totalDuration)}`, false);
+      if (elements.total) elements.total.textContent = `Total time: ${formatDuration(totalDuration)}`;
+      setInsertState("done");
       isInserting = false;
-      cancelRequested = false;
-      setInsertState('done');
       if (worker) {
         worker.terminate();
         worker = null;
       }
-
-      if (typeof window.confetti === 'function') window.confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+      if (typeof window.confetti === "function") window.confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
       if (elements.deleteBtn) elements.deleteBtn.disabled = false;
     }
   };
 
   worker.onerror = (e) => {
     log(`Worker error: ${e.message}`);
-    updateStatus('Insertion error', false);
-    setInsertState('ready');
+    updateStatus("Worker encountered an error");
+    setInsertState("ready");
     isInserting = false;
-    cancelRequested = false;
     if (worker) {
       worker.terminate();
       worker = null;
@@ -419,6 +456,7 @@ async function startInsertion() {
 async function cancelInsertion() {
   if (!isInserting) return;
   if (elements.cancelBtn) elements.cancelBtn.disabled = true;
+
   cancelRequested = true;
 
   if (worker) {
@@ -426,340 +464,189 @@ async function cancelInsertion() {
     worker = null;
   }
 
-  updateStatus('Cancelling insertion...', false);
-  log('User cancelled insertion.');
+  updateStatus("Cancelling...");
+  log("User cancelled insertion.");
 
   try {
-    if (db && db.close) {
+    if (db) {
       db.close();
       db = null;
     }
-    const req = indexedDB.deleteDatabase(DB_NAME);
+    let req = indexedDB.deleteDatabase(DB_NAME);
     req.onsuccess = () => {
-      log('Database deleted due to cancellation.');
-      updateStatus('Cancelled. Database cleared.');
+      updateStatus("Cancelled and cleared database.");
       clearUI();
+      setInsertState("ready");
       isInserting = false;
       cancelRequested = false;
-      setInsertState('ready');
     };
     req.onerror = () => {
-      updateStatus('Failed to clear database after cancellation.');
+      updateStatus("Failed deleting database after cancellation.");
       if (elements.cancelBtn) elements.cancelBtn.disabled = false;
     };
-    if ('caches' in window) {
-      caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))));
-      log('Cache cleared.');
+    if ("caches" in window) {
+      caches.keys().then((keys) => Promise.all(keys.map((k) => caches.delete(k))));
+      log("Caches cleared.");
     }
-  } catch (err) {
-    console.error('Error during cancellation:', err);
-    updateStatus(`Error during cancellation: ${err}`);
+  } catch (e) {
+    log(`Error during cancellation: ${e}`);
+    updateStatus(`Error: ${e}`);
     if (elements.cancelBtn) elements.cancelBtn.disabled = false;
   }
 }
 
-// Delete database with user confirmation
-async function deleteDatabase(autoConfirm = false) {
-  if (!autoConfirm) {
-    if (!confirm('Are you sure you want to delete all data? This action cannot be undone.')) return;
-  }
-  if (elements.deleteBtn) elements.deleteBtn.disabled = true;
-  updateStatus('Deleting database...', false);
-  log('Delete requested.');
 
-  try {
-    if (worker) {
-      worker.terminate();
-      worker = null;
-      isInserting = false;
-      cancelRequested = false;
-    }
-    if (db && db.close) {
-      db.close();
-      db = null;
-    }
-    const req = indexedDB.deleteDatabase(DB_NAME);
-    req.onsuccess = () => {
-      log('Database deleted.');
-      updateStatus('Database deleted.');
-      clearUI();
-      setInsertState('ready');
-    };
-    req.onerror = () => {
-      updateStatus('Failed to delete database.');
-      if (elements.deleteBtn) elements.deleteBtn.disabled = false;
-    };
-    req.onblocked = () => {
-      updateStatus('Delete operation blocked, close other tabs.');
-      if (elements.deleteBtn) elements.deleteBtn.disabled = false;
-    };
-    if ('caches' in window) {
-      caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))));
-      log('Cache cleared.');
-    }
-  } catch (err) {
-    console.error('Error during deletion:', err);
-    updateStatus('Error during deletion: ' + err);
-    if (elements.deleteBtn) elements.deleteBtn.disabled = false;
-  }
-}
+// Cache the goTop button element (make sure this matches your HTML id)
+const goTopBtn = document.getElementById('goTop');
 
-// Export all records to JSON
-async function exportData() {
-  if (!db) {
-    alert('Database not open.');
-    return;
-  }
-  if (batchInserted < TOTAL_ENTRIES) {
-    alert('Please complete the full 1 crore insertion before exporting.');
-    return;
-  }
-  if (elements.exportBtn) elements.exportBtn.disabled = true;
-  updateStatus('Exporting data...', true);
+function setupScrollToTopButton() {
+  if (!goTopBtn) return;
 
-  try {
-    const tx = db.transaction(STORE_NAME, 'readonly');
-    const store = tx.objectStore(STORE_NAME);
-    const results = [];
-    await new Promise((resolve, reject) => {
-      const req = store.openCursor();
-      req.onsuccess = e => {
-        const cursor = e.target.result;
-        if (cursor) {
-          results.push(cursor.value);
-          cursor.continue();
-        } else {
-          resolve();
-        }
-      };
-      req.onerror = () => reject(new Error('Cursor iteration failed'));
+  // Initially hide the button
+  goTopBtn.style.display = 'none';
+
+  // Show/hide button on scroll
+  window.addEventListener('scroll', () => {
+    if (window.pageYOffset > 200) {
+      goTopBtn.style.display = 'block';
+    } else {
+      goTopBtn.style.display = 'none';
+    }
+  });
+
+  // Scroll to top smoothly on click
+  goTopBtn.addEventListener('click', () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
     });
-    const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'rama_koti_backup.json';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-    updateStatus('Export completed successfully.');
-    alert(`Exported ${results.length} records successfully.`);
-  } catch (e) {
-    console.error('Export failed:', e);
-    updateStatus('Export failed.');
-    alert('Export failed: ' + e);
-  }
-  if (elements.exportBtn) elements.exportBtn.disabled = false;
+
+    // Update live region for screen readers if present
+    const liveRegion = document.querySelector('[aria-live="polite"]');
+    if (liveRegion) {
+      liveRegion.textContent = 'Scrolled to top';
+    }
+  });
+
+  // Keyboard accessibility (trigger click on Enter or Space)
+  goTopBtn.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      goTopBtn.click();
+    }
+  });
 }
 
-// Clear UI to ready state
-function clearUI() {
-  if (elements.logDiv) elements.logDiv.innerHTML = '<div>Ready to start...</div>';
-  if (elements.dataContainer) elements.dataContainer.innerHTML = '';
-  showDataContainer(false);
+// Call this function after your DOM is loaded
+window.addEventListener('DOMContentLoaded', setupScrollToTopButton);
+
+
+function clearUI(){
+  if(elements.logDiv) elements.logDiv.innerHTML = '<div>Ready to start...</div>';
+  if(elements.dataContainer) elements.dataContainer.innerHTML = '';
   showPaging(false);
-
-  batchInserted = 0;
-  currentPage = 0;
-  totalPages = 0;
-  if (elements.pageInfo) elements.pageInfo.textContent = 'Page 0 / 0';
-  updateStatus('Ready');
+  showData(false);
+  batchInserted=0;
+  currentPage=0;
+  totalPages=0;
+  milestoneShown=false;
+  if(elements.pageInfo) elements.pageInfo.textContent='Page 0 / 0';
+  updateStatus("Ready");
   enablePagination(false);
-  milestoneShown = false;
-  if (elements.milestoneDiv) elements.milestoneDiv.style.display = 'none';
-  if (elements.progressBar) {
-    elements.progressBar.value = 0;
-    elements.progressBar.style.display = 'none';
+  if(elements.milestoneDiv) elements.milestoneDiv.style.display='none';
+  if(elements.progressBar) {
+    elements.progressBar.value=0;
+    elements.progressBar.style.display='none';
   }
-  if (elements.total) elements.total.textContent = '';
+  if(elements.total) elements.total.textContent='';
 }
 
-// Scroll helpers
+// Setup scroll to top button
 function scrollToTop() {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  const liveRegion = document.querySelector('[aria-live="polite"]');
-  if (liveRegion) liveRegion.textContent = 'Scrolled to top';
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  const liveRegion = document.querySelector("[aria-live='polite']");
+  if (liveRegion) liveRegion.textContent = "Scrolled to top";
 }
 function setupScrollListener() {
   if (!elements.go) return;
-  elements.go.style.display = 'none';
-  window.addEventListener('scroll', () => {
-    elements.go.style.display = window.pageYOffset > 200 ? 'block' : 'none';
+  elements.go.style.display = "none";
+  window.addEventListener("scroll", () => {
+    elements.go.style.display = window.pageYOffset > 200 ? "block" : "none";
   });
   elements.go.onclick = scrollToTop;
 }
 
-// Initialization on page load
-window.onload = async () => {
-  try {
-    Object.assign(elements, {
-      startBtn: $('startBtn'),
-      cancelBtn: $('cancelBtn'),
-      deleteBtn: $('deleteBtn'),
-      exportBtn: $('exportBtn'),
-      status: $('status'),
-      total: $('totalTime'),
-      logDiv: $('logDiv'),
-      dataContainer: $('dataContainer'),
-      paginationBar: $('paginationBar'),
-      progressBar: $('progressBar'),
-      firstPageBtn: $('firstPageBtn'),
-      prevPageBtn: $('prevPageBtn'),
-      nextPageBtn: $('nextPageBtn'),
-      lastPageBtn: $('lastPageBtn'),
-      pageInfo: $('pageInfo'),
-      go: $('goTop'),
-      insertText: $('insertText'),
-      menuAbout: $('menuAbout'),
-      menuInsert: $('menuInsert'),
-      menuTools: $('menuTools'),
-      aboutPage: $('aboutPage'),
-      insertPage: $('insertPage'),
-      toolsPage: $('toolsPage'),
-      menuInstall: $('menuInstall'),
-      installPopup: $('installPopup'),
-      installBtn: $('installBtn'),
-      installClose: $('installClose'),
-      milestoneDiv: $('milestoneDiv'),
-    });
+// Initialization
+window.onload = () => {
+  Object.assign(elements, {
+    startBtn: $("startBtn"),
+    cancelBtn: $("cancelBtn"),
+    deleteBtn: $("deleteBtn"),
+    exportBtn: $("exportBtn"),
+    status: $("status"),
+    total: $("total"),
+    logDiv: $("logDiv"),
+    dataContainer: $("dataContainer"),
+    paginationBar: $("paginationBar"),
+    progressBar: $("progressBar"),
+    firstPageBtn: $("firstPageBtn"),
+    prevPageBtn: $("prevPageBtn"),
+    nextPageBtn: $("nextPageBtn"),
+    lastPageBtn: $("lastPageBtn"),
+    pageInfo: $("pageInfo"),
+    go: $("go"),
+    insertText: $("insertText"),
+    menuAbout: $("menuAbout"),
+    insertPage: $("insertPage"),
+    aboutPage: $("aboutPage"),
+    toolsPage: $("toolsPage"),
+    menuInsert: $("menuInsert"),
+    menuTools: $("menuTools"),
+    menuInstall: $("menuInstall"),
+    installPopup: $("installPopup"),
+    installBtn: $("installBtn"),
+    installClose: $("installClose"),
+    milestoneDiv: $("milestoneDiv"),
+  });
 
-    // Setup navigation buttons
-    if (elements.menuAbout) elements.menuAbout.onclick = () => showSection('about');
-    if (elements.menuInsert) elements.menuInsert.onclick = () => showSection('insert');
-    if (elements.menuTools) elements.menuTools.onclick = () => showSection('tools');
+  // Navigation bindings
+  if (elements.menuAbout) elements.menuAbout.onclick = () => showSection("about");
+  if (elements.menuInsert) elements.menuInsert.onclick = () => showSection("insert");
+  if (elements.menuTools) elements.menuTools.onclick = () => showSection("tools");
 
-    // Setup pagination buttons
-    if (elements.firstPageBtn) elements.firstPageBtn.onclick = goFirst;
-    if (elements.prevPageBtn) elements.prevPageBtn.onclick = goPrev;
-    if (elements.nextPageBtn) elements.nextPageBtn.onclick = goNext;
-    if (elements.lastPageBtn) elements.lastPageBtn.onclick = goLast;
+  // Pagination handlers
+  if (elements.firstPageBtn) elements.firstPageBtn.onclick = goFirst;
+  if (elements.prevPageBtn) elements.prevPageBtn.onclick = goPrev;
+  if (elements.nextPageBtn) elements.nextPageBtn.onclick = goNext;
+  if (elements.lastPageBtn) elements.lastPageBtn.onclick = goLast;
 
-    // Setup scroll to top button
-    setupScrollListener();
+  setupScrollListener();
 
-    // Setup main control buttons
-    if (elements.startBtn) elements.startBtn.onclick = startInsertion;
-    if (elements.cancelBtn) elements.cancelBtn.onclick = cancelInsertion;
-    if (elements.deleteBtn) elements.deleteBtn.onclick = () => {
-      if (!elements.deleteBtn.disabled) deleteDatabase(false);
-    };
-    if (elements.exportBtn) elements.exportBtn.onclick = () => {
-      if (!elements.exportBtn.disabled) exportData();
-    };
+  // Control buttons
+  if (elements.startBtn) elements.startBtn.onclick = startInsertion;
+  if (elements.cancelBtn) elements.cancelBtn.onclick = cancelInsertion;
+  if (elements.deleteBtn) elements.deleteBtn.onclick = () => {
+    if (!elements.deleteBtn.disabled) deleteDatabase();
+  };
+  if (elements.exportBtn) elements.exportBtn.onclick = () => {
+    if (!elements.exportBtn.disabled) exportData();
+  };
 
-    // Open DB and check existing entries
-    try {
-      await openDB();
-      const tx = db.transaction(STORE_NAME, 'readonly');
-      const store = tx.objectStore(STORE_NAME);
-      const countReq = store.count();
-      countReq.onsuccess = () => {
-        const count = countReq.result;
-        batchInserted = count;
-        totalPages = Math.ceil(count / PAGE_SIZE);
-        currentPage = 0;
-        if (count >= TOTAL_ENTRIES) {
-          if (elements.startBtn) elements.startBtn.disabled = true;
-          if (elements.cancelBtn) elements.cancelBtn.style.display = 'none';
-          if (elements.deleteBtn) elements.deleteBtn.disabled = false;
-          if (elements.exportBtn) elements.exportBtn.disabled = false;
-          loadPage(currentPage);
-          updatePagination();
-          enablePagination(true);
-          setInsertState('done');
-          updateStatus(`Loaded ${formatNumberIndian(count)} entries. 1 Crore completed!`);
-
-          if (elements.milestoneDiv) {
-            milestoneShown = true;
-            elements.milestoneDiv.style.display = 'block';
-          }
-        } else if (count > 0) {
-          updateStatus(`Found ${formatNumberIndian(count)} entries. Continue insertion to reach 1 crore.`);
-          setInsertState('ready');
-          enablePagination(false);
-          showDataContainer(false);
-          showPaging(false);
-        } else {
-          setInsertState('ready');
-          enablePagination(false);
-          updateStatus('Database empty. Please start insertion.');
-          if (elements.cancelBtn) elements.cancelBtn.style.display = 'none';
-          if (elements.deleteBtn) elements.deleteBtn.disabled = true;
-          if (elements.exportBtn) elements.exportBtn.disabled = true;
-          showDataContainer(false);
-          showPaging(false);
-        }
-        if (elements.progressBar) elements.progressBar.style.display = 'none';
-      };
-      countReq.onerror = () => {
-        console.error('Failed to read entries count');
-        updateStatus('Failed to read entries.');
-        enablePagination(false);
-        setInsertState('ready');
-        if (elements.progressBar) elements.progressBar.style.display = 'none';
-        showDataContainer(false);
-        showPaging(false);
-      };
-    } catch (error) {
-      console.error('Database open error:', error);
-      updateStatus(`Failed to open database: ${error}`);
-      enablePagination(false);
-      setInsertState('ready');
-      if (elements.deleteBtn) elements.deleteBtn.disabled = true;
-      if (elements.exportBtn) elements.exportBtn.disabled = true;
-      if (elements.progressBar) elements.progressBar.style.display = 'none';
-      showDataContainer(false);
-      showPaging(false);
-    }
-  } catch (error) {
-    console.error('Initialization error:', error);
-    updateStatus('Application failed to initialize. Please refresh the page.');
-  }
+  // Initial UI
+  setInsertState("ready");
+  enablePagination(false);
+  showPaging(false);
+  showData(false);
+  updateStatus("Ready. Click 'Start' to begin.");
 };
 
 // Global error handlers
-window.addEventListener('error', e => {
-  console.error('Global error:', e.error);
-  if (elements.status) updateStatus('An error occurred. Please refresh the page if problems persist.');
+window.addEventListener("error", (e) => {
+  console.error("Global error:", e.error || e.message);
+  updateStatus("An unexpected error occurred. Please reload.");
 });
-window.addEventListener('unhandledrejection', e => {
-  console.error('Unhandled rejection:', e.reason);
-  if (elements.status) updateStatus('An error occurred. Please refresh the page if problems persist.');
+window.addEventListener("unhandledrejection", (e) => {
+  console.error("Unhandled rejection:", e.reason || e.message);
+  updateStatus("An unexpected error occurred. Please reload.");
 });
-
-// Cleanup on Tab or Window Close: Delete IndexedDB, clear caches, localStorage, sessionStorage
-window.addEventListener('beforeunload', () => {
-  try {
-    if (db && db.close) {
-      db.close();
-      db = null;
-    }
-    const deleteRequest = indexedDB.deleteDatabase(DB_NAME);
-    deleteRequest.onsuccess = () => {
-      console.log('IndexedDB deleted on tab close.');
-    };
-    deleteRequest.onerror = () => {
-      console.warn('Failed to delete IndexedDB on tab close.');
-    };
-  } catch (err) {
-    console.error('Error deleting IndexedDB on tab close:', err);
-  }
-  try {
-    localStorage.clear();
-    sessionStorage.clear();
-    console.log('localStorage and sessionStorage cleared on tab close.');
-  } catch (err) {
-    console.error('Error clearing storage on tab close:', err);
-  }
-  if ('caches' in window) {
-    caches.keys()
-      .then(keys => Promise.all(keys.map(key => caches.delete(key))))
-      .then(() => {
-        console.log('Cache storage cleared on tab close.');
-      })
-      .catch(e => {
-        console.warn('Failed to clear Cache storage on tab close:', e);
-      });
-  }
-});
+// Clear UI elements
