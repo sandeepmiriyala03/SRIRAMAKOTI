@@ -15,28 +15,30 @@
   <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
   <link rel="apple-touch-icon" href="icon-192.png" />
-  <!-- Your styles.css containing the provided CSS -->
+
+  <!-- External CSS -->
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <img src="icon-512.png" alt="Sri Rama Koti Logo" id="heroIcon"  class="HEADER_LOGO" />
+
+  <!-- Logo -->
+  <img src="icon-512.png" alt="Sri Rama Koti Logo" id="heroIcon" role="img" class="HEADER_LOGO" />
 
   <!-- Navigation Menu -->
   <nav id="menuBar" aria-label="Main navigation" role="navigation">
-    <button id="menuAbout" disabled>About Rama</button>
-    <button id="menuInsert">Write RamaKoti</button>
-    <button id="menuTools">Tools Used</button>
+    <button id="menuAbout" disabled aria-current="page" aria-label="About Rama Section">About Rama</button>
+    <button id="menuInsert" aria-label="Write RamaKoti Section">Write RamaKoti</button>
+    <button id="menuTools" aria-label="Tools Used Section">Tools Used</button>
     <button id="menuInstall" style="display:none;" aria-label="Install this app">Install App</button>
   </nav>
-
   <!-- Install App Popup -->
-  <div 
-    id="installPopup" 
-    role="dialog" 
-    aria-live="polite" 
-    aria-modal="true" 
-    aria-label="Install application prompt" 
-    style="display:none; position:fixed; top:20%; left:50%; transform: translateX(-50%); background:#fff; border-radius:8px; box-shadow:0 2px 10px rgba(0,0,0,0.2); padding:1rem; z-index:1000; max-width: 300px;"
+  <div
+    id="installPopup"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Install application prompt"
+    aria-live="polite"
+    style="display:none; position:fixed; top:20%; left:50%; transform: translateX(-50%);"
   >
     <span id="installText">Install this app for a better experience.</span>
     <div style="margin-top:1rem; display:flex; justify-content:flex-end; gap:0.5rem;">
@@ -45,194 +47,168 @@
     </div>
   </div>
 
-  <!-- About Rama Section (Visible by default) -->
+  <!-- About Rama Section -->
   <section id="aboutPage" role="region" aria-live="polite" aria-atomic="true" tabindex="0" style="padding:1rem;">
-    <h2>About Sri Rama</h2>
-    <p>రామాయ రామభద్రాయ రామచంద్రాయ వేధసే . రఘునాథాయ నాథాయ సితాయ</p>
-    <p>Lord Sri Rama is the seventh avatar of Vishnu, known for his righteousness and virtue.</p>
-    <h3>Spiritual Significance</h3>
-    <p>The epic Ramayana narrates his life, emphasizing dharma, devotion, and moral excellence. Rama's virtue inspires millions of devotees worldwide.</p>
+    <details open>
+      <summary>About Sri Rama</summary>
+      <div>
+        <p lang="te">రామాయ రామభద్రాయ రామచంద్రాయ వేధసే . రఘునాథాయ నాథాయ సితాయ</p>
+        <p>Lord Sri Rama is the seventh avatar of Vishnu, known for his righteousness and virtue.</p>
+        <h3>Spiritual Significance</h3>
+        <p>The epic Ramayana narrates his life, emphasizing dharma, devotion, and moral excellence. Rama's virtue inspires millions of devotees worldwide.</p>
+        <h3>What is Rama Koti?</h3>
+        <p>Rama Koti is a devotional practice where devotees write the name of Lord Rama one crore times, symbolizing their devotion and seeking blessings.</p>
+        <p>It is believed that this practice purifies the mind and soul, bringing peace and spiritual fulfillment.</p>
+        <p>In Telugu, it is known as "రామ కోటి" and in Hindi as "राम कोटि".</p>
+        <p>Devotees often write "జై శ్రీ రామ్" or "जय श्री रामः" as part of this practice, which translates to "Victory to Lord Rama".</p>
+        <p>Rama Koti is a way to express love and devotion towards Lord Rama, and it is performed with great reverence in many Hindu households.</p>
+        <p>It is said that writing Rama Koti brings peace, prosperity, and spiritual upliftment to the devotee.</p>
+        <p>Many believe it helps in overcoming obstacles and achieving success in life through Rama's blessings.</p>
+        <p>Overall, Rama Koti is a beautiful expression of faith and devotion connecting devotees with Lord Rama.</p>
+        <p>For more info, see the <a href="https://en.wikipedia.org/wiki/Rama_Koti" target="_blank" rel="noopener noreferrer">Rama Koti Wikipedia page</a>.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- Insert (Write RamaKoti) Section -->
+  <section id="insertPage" role="region" aria-live="polite" aria-atomic="true" tabindex="0" style="display:none; padding:1rem;">
+    <details open>
+      <summary>RAMA KOTI - Write 1 Crore Times</summary>
+      <div>
+        <div id="ramakotiInfo" style="margin-bottom:1rem; max-width:700px;">
+          <p><strong>English:</strong> Writing Rama Koti means writing Lord Rama's holy name one crore (10 million) times. This is a deeply powerful spiritual practice that brings peace to the mind, strengthens focus, and generates positive energy throughout one's life. Traditionally, devotees painstakingly write this manually, which purifies the mind and the soul, fostering deep devotion, mental clarity, and spiritual growth. Today, with the help of modern technology, you can perform this sacred practice digitally through this app. This enables you to complete the practice faster and with ease, while still gaining the same divine blessings. Simply start the insertion process and let your device assist you in completing this sacred and fulfilling journey toward spiritual upliftment.</p>
+          <p lang="te"><strong>Telugu:</strong> రామ కోటి రాయడం అంటే శ్రీరాముని పవిత్రమైన నామాన్ని కోటి (1,00,00,000) సార్లు వ్రాయడం. ఇది ఒక ఆధ్యాత్మిక సాధన, ఇది మనసుకు శాంతి, దృష్టికి స్థిరత్వం మరియు జీవితం మొత్తం సానుకూల శక్తిని ఇవ్వగలుగుతుంది. సాంప్రదాయంగా, భక్తులు ఈ ప్రక్రియను చేతితో శ్రద్ధగా వ్రాసి పూర్తి చేస్తారు. ఇది మనసు మరియు ఆత్మను పవిత్రం చేయడం ద్వారా గాఢమైన భక్తి, మానసిక స్పష్టత మరియు ఆధ్యాత్మిక అభివృద్ధికి దారి తీస్తుంది. ఆధునిక సాంకేతికత సహాయంతో, ఇప్పుడు ఈ పవిత్ర కార్యాన్ని డిజిటల్ రూపంలో ఈ యాప్ ద్వారా చేయవచ్చు. ఈ విధంగా మీరు వేగంగా, సులభంగా ఈ ఆధ్యాత్మిక యాత్రను పూర్తి చేసి, అంతేకాకుండా దైవిక ఆశీర్వాదాలను పొందవచ్చు. ఈ పవిత్ర ప్రక్రియను ప్రారంభించి మీ పరికరం మీకు సహాయం చేసేలా చేయండి మరియు ఆధ్యాత్మిక అభివృద్ధి పథాన్ని స్ఫూర్తిగా పూర్తి చేయండి.</p>
+        </div>
+
+        <label for="insertText"><b>Rama Koti Phrase</b></label>
+        <textarea
+          id="insertText"
+          rows="3"
+          aria-label="Rama Koti Phrase"
+          placeholder="You can add your chosen devotional phrase here."
+        >JAI SRI RAM| జై శ్రీ రామ్|जय श्री राम :</textarea>
+
+        <div id="buttonsBar" aria-label="Insertion Controls" style="margin-top:1rem;">
+          <button id="startBtn" title="Insert 1 crore entries">Start Insertion</button>
+          <button id="cancelBtn" title="Cancel insertion" style="display:none;">Cancel</button>
+          <button id="deleteBtn" title="Delete database" disabled>Delete Database</button>
+        </div>
+
+        <progress id="progressBar" max="100" value="0" aria-label="Insertion progress" style="display:none; width:100%; margin-top:1rem;"></progress>
+
+        <p id="status" aria-live="polite" aria-atomic="true" style="margin-top:1rem;">Status: Ready</p>
+
+        <div
+          id="milestoneDiv"
+          tabindex="0"
+          role="alert"
+          aria-live="assertive"
+          aria-atomic="true"
+          style="display:none; background: linear-gradient(45deg, #28a745, #20c997); color: white; border-radius: 12px; padding: 24px; margin: 20px 0; text-align: center; font-size: 1.3rem; font-weight: bold; box-shadow: 0 4px 20px rgba(40, 167, 69, 0.4); animation: fadeInScale 0.5s ease-out; position: relative; z-index: 10;"
+        >
+          🎉 Congratulations! 1 Crore entries inserted successfully! 🎉
+          <div style="margin-top: 8px; font-size: 1rem; opacity: 0.9;">Digital Rama Koti completed with divine blessings</div>
+        </div>
+
+        <div id="timeStats" style="display:none; background: #f8f9fa; border: 2px solid #28a745; border-radius: 8px; padding: 15px; margin: 10px 0; text-align: center;">
+          <div style="font-weight: bold; color: #28a745; font-size: 1.1rem; margin-bottom: 5px;">⏱️ Insertion Completed</div>
+          <p id="totalTime" aria-live="polite" aria-atomic="true" style="margin: 0; font-size: 1rem; color: #495057; font-weight: 600;"></p>
+          <div style="font-size: 0.9rem; color: #6c757d; margin-top: 5px;">Performance: 1 Crore entries processed successfully</div>
+        </div>
+
+        <div id="logDiv" aria-live="polite" aria-atomic="false" tabindex="0" style="max-height: 120px; overflow: auto; border: 1px solid #ddd; padding: 10px; margin-top: 1rem; border-radius: 8px; background: #fafafa;"></div>
+
+        <div id="paginationBar" aria-label="Pagination Controls" style="display:flex; justify-content:center; gap: 10px; flex-wrap:wrap; margin: 20px 0;">
+          <button id="firstPageBtn" disabled aria-label="First page" title="Go to first page">« First</button>
+          <button id="prevPageBtn" disabled aria-label="Previous page" title="Go to previous page">‹ Prev</button>
+          <span
+            id="pageInfo"
+            aria-live="polite"
+            aria-atomic="true"
+            style="background: #f8f9fa; padding: 8px 16px; border-radius: 8px; font-weight: 600; border: 1px solid #dee2e6;"
+            >Page 0 / 0</span
+          >
+          <button id="nextPageBtn" disabled aria-label="Next page" title="Go to next page">Next ›</button>
+          <button id="lastPageBtn" disabled aria-label="Last page" title="Go to last page">Last »</button>
+        </div>
+
+        <div
+          id="dataContainer"
+          aria-live="polite"
+          aria-atomic="true"
+          tabindex="0"
+          style="max-height: 250px; overflow:auto; border: 2px solid #ff6b35; border-radius: 8px; padding: 15px; background: #fff;"
+        ></div>
+      </div>
+    </details>
+  </section>
+
+<!-- Tools Section -->
+<section id="toolsPage" role="region" aria-live="polite" aria-atomic="true" tabindex="0" style="display:none; padding:1rem;">
+  <details>
+    <summary>Tools Used</summary>
     <div>
-      <h3>What is Rama Koti?</h3>
-      <p>Rama Koti is a devotional practice where devotees write the name of Lord Rama one crore times, symbolizing their devotion and seeking blessings.</p>
-      <p>It is believed that this practice purifies the mind and soul, bringing peace and spiritual fulfillment.</p>
-      <p>In Telugu, it is known as "రామ కోటి" and in Hindi as "राम कोटि".</p>
-      <p>Devotees often write "జై శ్రీ రామ్" or "जय श्री रामः" as part of this practice, which translates to "Victory to Lord Rama".</p>
-      <p>Rama Koti is a way to express love and devotion towards Lord Rama, and it is performed with great reverence in many Hindu households.</p>
-      <p>It is said that writing Rama Koti brings peace, prosperity, and spiritual upliftment to the devotee.</p>
-      <p>Many believe it helps in overcoming obstacles and achieving success in life through Rama's blessings.</p>
-      <p>Overall, Rama Koti is a beautiful expression of faith and devotion connecting devotees with Lord Rama.</p>
-      <p>For more info, see the <a href="https://en.wikipedia.org/wiki/Rama_Koti" target="_blank" rel="noopener noreferrer">Rama Koti Wikipedia page</a>.</p>
+      <ul>
+        <li>IndexedDB for offline storage (batch size 50,000 for optimal performance)</li>
+        <li>Web Workers for background processing</li>
+        <li>Service Worker (PWA) for offline functionality</li>
+        <li>Modern Web technologies: HTML5, CSS3, JavaScript</li>
+        <li>Cross-browser compatibility (Chrome, Safari, Firefox, Edge)</li>
+        <li>Mobile-optimized responsive design</li>
+        <li>AI Assistant powered by in-browser AI model using Xenova Transformers</li>
+        <li>Efficient single-click interaction with loading spinners for smooth UX</li>
+        <li>Devotional and respectful text generation guided by carefully crafted prompts</li>
+        <li>Robust error handling and fallback UI for AI model loading and response generation</li>
+        <li>Accessibility compliant interface with ARIA roles and dynamic live regions</li>
+        <li>Lightweight model loading via CDN, supporting offline repeat usage once cached</li>
+      </ul>
+      <h3>Database Information:</h3>
+      <ul>
+        <li><strong>Database Name:</strong> SriRamaDB</li>
+        <li><strong>Storage Type:</strong> IndexedDB (local browser storage)</li>
+        <li><strong>Batch Size:</strong> 50,000 entries per batch</li>
+        <li><strong>Page Size:</strong> 5,000 entries per page</li>
+        <li><strong>Maximum Capacity:</strong> 10,000,000 entries (1 Crore)</li>
+      </ul>
     </div>
-  </section>
+  </details>
+</section>
 
-  <!-- Insert Section (Hidden Initially) -->
-  <section 
-    id="insertPage" 
-    role="region" 
-    aria-live="polite" 
-    aria-atomic="true" 
-    tabindex="0" 
-    style="display:none; padding:1rem;"
-  >
-    <h2>RAMA KOTI - Write 1 Crore Times</h2>
 
-    <!-- English and Telugu descriptive paragraphs -->
-    <div id="ramakotiInfo" style="margin-bottom:1rem; font-size:1rem; line-height:1.5; max-width: 700px;">
-      <p><strong>English:</strong> Writing Rama Koti means writing Lord Rama's holy name one crore (10 million) times. This is a deeply powerful spiritual practice that brings peace to the mind, strengthens focus, and generates positive energy throughout one's life. Traditionally, devotees painstakingly write this manually, which purifies the mind and the soul, fostering deep devotion, mental clarity, and spiritual growth. Today, with the help of modern technology, you can perform this sacred practice digitally through this app. This enables you to complete the practice faster and with ease, while still gaining the same divine blessings. Simply start the insertion process and let your device assist you in completing this sacred and fulfilling journey toward spiritual upliftment.</p>
+<section id="aiPage" role="region">
+  <details open>
+    <summary>Ask the Devotional AI Assistant</summary>
+    <p>Ask me about Rama Koti, Ramayana, or receive devotional guidance and motivation.</p>
+    <textarea id="aiQuery" rows="3" style="width:100%;" placeholder="Type your question..."></textarea><br><br>
 
-      <p><strong>Telugu:</strong> రామ కోటి రాయడం అంటే శ్రీరాముని పవిత్రమైన నామాన్ని కోటి (1,00,00,000) సార్లు వ్రాయడం. ఇది ఒక ఆధ్యాత్మిక సాధన, ఇది మనసుకు శాంతి, దృష్టికి స్థిరత్వం మరియు జీవితం మొత్తం సానుకూల శక్తిని ఇవ్వగలుగుతుంది. సాంప్రదాయంగా, భక్తులు ఈ ప్రక్రియను చేతితో శ్రద్ధగా వ్రాసి పూర్తి చేస్తారు. ఇది మనసు మరియు ఆత్మను పవిత్రం చేయడం ద్వారా గాఢమైన భక్తి, మానసిక స్పష్టత మరియు ఆధ్యాత్మిక అభివృద్ధికి దారి తీస్తుంది. ఆధునిక సాంకేతికత సహాయంతో, ఇప్పుడు ఈ పవిత్ర కార్యాన్ని డిజిటల్ రూపంలో ఈ యాప్ ద్వారా చేయవచ్చు. ఈ విధంగా మీరు వేగంగా, సులభంగా ఈ ఆధ్యాత్మిక యాత్రను పూర్తి చేసి, అంతేకాకుండా దైవిక ఆశీర్వాదాలను పొందవచ్చు. ఈ పవిత్ర ప్రక్రియను ప్రారంభించి మీ పరికరం మీకు సహాయం చేసేలా చేయండి మరియు ఆధ్యాత్మిక అభివృద్ధి పథాన్ని స్ఫూర్తిగా పూర్తి చేయండి.</p>
+    <button id="askAIButton">Ask AI</button>
+    <button id="clearAIButton" type="button" style="margin-left: 10px;">Clear</button>
+
+    <div id="aiResponse" style="display:none;">
+      AI response will appear here...
     </div>
+  </details>
+</section>
 
-    <label for="insertText"><b>Rama Koti Phrase</b></label>
+  <!-- Live Status Region for Screen Readers -->
+  <div
+    id="ariaStatus"
+    aria-live="polite"
+    aria-atomic="true"
+    style="position:absolute; left:-9999px; height:1px; width:1px; overflow:hidden;"
+  ></div>
 
-    <textarea 
-      id="insertText" 
-      rows="3" 
-      aria-label="Rama Koti Phrase" 
-      placeholder="You can add your chosen devotional phrase here."
-    >JAI SRI RAM| జై శ్రీ రామ్|जय श्री राम
-
-// You can add your chosen devotional phrase here</textarea>
-
-    <div id="buttonsBar" aria-label="Insertion Controls" style="margin-top:1rem;">
-      <button id="startBtn" title="Insert 1 crore entries">Start Insertion</button>
-      <button id="cancelBtn" title="Cancel insertion" style="display:none;">Cancel</button>
-      <button id="deleteBtn" title="Delete database" disabled>Delete Database</button>
-      <!-- Export button removed -->
-    </div>
-
-    <progress id="progressBar" max="100" value="0" aria-label="Insertion progress" style="display:none; width:100%; margin-top:1rem;"></progress>
-
-    <p id="status" aria-live="polite" aria-atomic="true" style="margin-top:1rem;">Status: Ready</p>
-
-    <!-- Enhanced Milestone Display with proper positioning -->
-    <div 
-      id="milestoneDiv" 
-      tabindex="0"
-      role="alert" 
-      aria-live="assertive" 
-      aria-atomic="true" 
-      style="display:none; background: linear-gradient(45deg, #28a745, #20c997); color: white; border-radius: 12px; padding: 24px; margin: 20px 0; text-align: center; font-size: 1.3rem; font-weight: bold; box-shadow: 0 4px 20px rgba(40, 167, 69, 0.4); animation: fadeInScale 0.5s ease-out; position: relative; z-index: 10;"
-    >
-      🎉 Congratulations! 1 Crore entries inserted successfully! 🎉
-      <div style="margin-top: 8px; font-size: 1rem; opacity: 0.9;">
-        Digital Rama Koti completed with divine blessings
-      </div>
-    </div>
-
-    <!-- Enhanced Total Time Display -->
-    <div id="timeStats" style="display:none; background: #f8f9fa; border: 2px solid #28a745; border-radius: 8px; padding: 15px; margin: 10px 0; text-align: center;">
-      <div style="font-weight: bold; color: #28a745; font-size: 1.1rem; margin-bottom: 5px;">
-        ⏱️ Insertion Completed
-      </div>
-      <p id="totalTime" aria-live="polite" aria-atomic="true" style="margin: 0; font-size: 1rem; color: #495057; font-weight: 600;"></p>
-      <div style="font-size: 0.9rem; color: #6c757d; margin-top: 5px;">
-        Performance: 1 Crore entries processed successfully
-      </div>
-    </div>
-
-    <div 
-      id="logDiv" 
-      aria-live="polite" 
-      aria-atomic="false" 
-      tabindex="0" 
-      style="max-height: 120px; overflow: auto; border: 1px solid #ddd; padding: 10px; margin-top: 1rem; border-radius: 8px; background: #fafafa;"
-    ></div>
-
-    <div 
-      id="paginationBar" 
-      aria-label="Pagination Controls" 
-      style="display:flex; justify-content:center; gap: 10px; flex-wrap:wrap; margin: 20px 0;"
-    >
-      <button id="firstPageBtn" disabled aria-label="First page">« First</button>
-      <button id="prevPageBtn" disabled aria-label="Previous page">‹ Prev</button>
-      <span 
-        id="pageInfo" 
-        aria-live="polite" 
-        aria-atomic="true" 
-        style="background: #f8f9fa; padding: 8px 16px; border-radius: 8px; font-weight: 600; border: 1px solid #dee2e6;"
-      >Page 0 / 0</span>
-      <button id="nextPageBtn" disabled aria-label="Next page">Next ›</button>
-      <button id="lastPageBtn" disabled aria-label="Last page">Last »</button>
-    </div>
-
-    <div 
-      id="dataContainer" 
-      aria-live="polite" 
-      aria-atomic="true" 
-      tabindex="0" 
-      style="max-height: 250px; overflow:auto; border: 2px solid #ff6b35; border-radius: 8px; padding: 15px; background: #fff;"
-    ></div>
-  </section>
-
-  <!-- Tools Section (Hidden Initially) -->
-  <section 
-    id="toolsPage" 
-    role="region" 
-    aria-live="polite" 
-    aria-atomic="true" 
-    tabindex="0" 
-    style="display:none; padding:1rem;"
-  >
-    <h2>Tools Used</h2>
-    <ul>
-      <li>IndexedDB for offline storage (batch size 50,000 for optimal performance)</li>
-      <li>Web Workers for background processing</li>
-      <li>Service Worker (PWA) for offline functionality</li>
-      <li>Modern Web technologies: HTML5, CSS3, JavaScript</li>
-      <li>Cross-browser compatibility (Chrome, Safari, Firefox, Edge)</li>
-      <li>Mobile-optimized responsive design</li>
-    </ul>
-    <h3>Database Information:</h3>
-    <ul>
-      <li><strong>Database Name:</strong> SriRamaDB</li>
-      <li><strong>Storage Type:</strong> IndexedDB (local browser storage)</li>
-      <li><strong>Batch Size:</strong> 50,000 entries per batch</li>
-      <li><strong>Page Size:</strong> 5,000 entries per page</li>
-      <li><strong>Maximum Capacity:</strong> 10,000,000 entries (1 Crore)</li>
-    </ul>
-  </section>
-
-  <!-- Scroll to Top Button -->
-  <button 
-    id="goTop" 
-    aria-label="Scroll to top" 
-    role="button" 
-    tabindex="0" 
-    style="display:none; position: fixed; bottom: 20px; right: 20px; background: #b85c38; color: white; border: none; border-radius: 50%; width: 44px; height: 44px; font-size: 24px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2); transition: all 0.3s ease;"
-  >↑</button>
-
-  <!-- Live Status Region (for screen readers) -->
-  <div id="ariaStatus" aria-live="polite" aria-atomic="true" style="position:absolute; left:-9999px; height:1px; width:1px; overflow:hidden;"></div>
+   <!-- Scroll to Top Button -->
+  <button id="goTop" style="display:none; position: fixed; bottom: 20px; right: 20px;">↑</button>
 
   <!-- Footer -->
-  <footer id="footer" role="contentinfo" aria-label="Site Footer" style="margin-top: 2rem; text-align: center; color: #b85c38cc; font-size: 0.9rem;">
-    <p>
-      &copy; 2025 Sandeep Miriyala | 
-      <a href="mailto:vanisandeep@gmail.com">Contact Me</a>
-    </p>
+  <footer id="footer" role="contentinfo" style="margin-top: 2rem; text-align: center; font-size: 0.9rem;">
+    <p>&copy; 2025 Sandeep Miriyala</p>
   </footer>
 
+  <!-- External JS -->
   <script src="installpopup.js" defer></script>
   <script src="main.js" defer></script>
-
-  <!-- Add CSS for animations -->
-  <style>
-    @keyframes fadeInScale {
-      0% { opacity: 0; transform: scale(0.8); }
-      100% { opacity: 1; transform: scale(1); }
-    }
-    
-    #milestoneDiv:focus {
-      outline: 3px solid rgba(255, 255, 255, 0.6);
-      outline-offset: 2px;
-    }
-    
-    #goTop:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    }
-  </style>
+  <script type="module" src="ai.js"></script>
 </body>
 </html>
