@@ -23,6 +23,9 @@ let cancelRequested = false;
 let lastPhrase = "";
 let milestoneShown = false;
 
+let userStartTime = null;  // User system start time
+let userEndTime = null;    // User system end time
+
 // DOM cache helper
 const elements = {};
 const $ = (id) => document.getElementById(id);
@@ -47,13 +50,12 @@ function formatDuration(ms) {
   return parts.join(" ");
 }
 
-// New function for HH:MM:SS format
 function formatDurationHHMMSS(ms) {
   const totalSecs = Math.floor(ms / 1000);
   const h = Math.floor(totalSecs / 3600);
   const m = Math.floor((totalSecs % 3600) / 60);
   const s = totalSecs % 60;
-  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
 function log(text) {
@@ -115,7 +117,6 @@ function updatePagination() {
   enablePagination(canPaginate);
 }
 
-// Open/create IndexedDB database
 async function openDB() {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
@@ -149,7 +150,6 @@ async function openDB() {
   });
 }
 
-// Delete IndexedDB and caches silently
 async function deleteDatabase(confirmDelete = true) {
   if (confirmDelete && !confirm("Delete all data? This is irreversible.")) return false;
 
@@ -197,7 +197,6 @@ async function deleteDatabase(confirmDelete = true) {
   }
 }
 
-// Load page data and display
 function loadPage(page) {
   if (!db || batchInserted < TOTAL_ENTRIES) {
     showPaging(false);
@@ -254,7 +253,6 @@ function loadPage(page) {
   }
 }
 
-// Pagination handlers
 function goFirst() {
   if (currentPage > 0) {
     loadPage(0);
@@ -284,7 +282,6 @@ function goLast() {
   }
 }
 
-// Section navigation
 function showSection(section) {
   ["about", "insert", "tools"].forEach((key) => {
     if (elements[key + "Page"]) {
@@ -297,7 +294,6 @@ function showSection(section) {
   });
 }
 
-// Input validation
 function validateInput() {
   if (!elements.insertText) return false;
   let val = elements.insertText.value.trim();
@@ -309,9 +305,8 @@ function validateInput() {
   return true;
 }
 
-// Update UI state for insertion actions
 function setInsertState(state) {
-  const { startBtn, cancelBtn, progressBar, deleteBtn, exportBtn } = elements;
+  const { startBtn, cancelBtn, progressBar, deleteBtn } = elements;
   if (!(startBtn && cancelBtn && progressBar)) return;
   switch (state) {
     case "ready":
@@ -322,7 +317,6 @@ function setInsertState(state) {
       cancelBtn.disabled = false;
       progressBar.style.display = "none";
       if (deleteBtn) deleteBtn.disabled = true;
-      if (exportBtn) exportBtn.disabled = true;
       break;
     case "inserting":
       startBtn.disabled = true;
@@ -332,7 +326,6 @@ function setInsertState(state) {
       cancelBtn.disabled = false;
       progressBar.style.display = "";
       if (deleteBtn) deleteBtn.disabled = true;
-      if (exportBtn) exportBtn.disabled = true;
       break;
     case "done":
       startBtn.disabled = true;
@@ -342,12 +335,10 @@ function setInsertState(state) {
       cancelBtn.disabled = true;
       progressBar.style.display = "none";
       if (deleteBtn) deleteBtn.disabled = false;
-      if (exportBtn) exportBtn.disabled = false;
       break;
   }
 }
 
-// Start insertion process
 async function startInsertion() {
   if (isInserting) return;
   if (!validateInput()) return;
@@ -382,6 +373,8 @@ async function startInsertion() {
   batchInserted = 0;
   milestoneShown = false;
 
+  userStartTime = new Date();
+
   let startTime = performance.now();
 
   worker = new Worker("SriramaInsert.js", { type: "module" });
@@ -402,19 +395,16 @@ async function startInsertion() {
     if (typeof e.data.inserted === "number") {
       batchInserted = e.data.inserted;
 
-      // Enhanced milestone display when 1 crore is reached
       if (!milestoneShown && batchInserted >= TOTAL_ENTRIES) {
         milestoneShown = true;
-        
-        // Show milestone celebration
+
         if (elements.milestoneDiv) {
           elements.milestoneDiv.style.display = "block";
-          // Focus on milestone for accessibility
           setTimeout(() => {
             elements.milestoneDiv.focus();
           }, 100);
         }
-        
+
         updateStatus("🎉 1 Crore insertion complete!");
         log("🎉 MILESTONE: 1 Crore (10,000,000) entries inserted successfully!");
       }
@@ -433,7 +423,8 @@ async function startInsertion() {
           )} req/sec - ETA ${Math.ceil(eta)}s`,
           true
         );
-        if (elements.progressBar) elements.progressBar.value = Math.min(100, (batchInserted / TOTAL_ENTRIES) * 100);
+        if (elements.progressBar)
+          elements.progressBar.value = Math.min(100, (batchInserted / TOTAL_ENTRIES) * 100);
       }
 
       if (batchInserted >= TOTAL_ENTRIES) {
@@ -446,40 +437,42 @@ async function startInsertion() {
       }
     }
     if (e.data.done) {
+      userEndTime = new Date();
+
       let totalDuration = performance.now() - startTime;
       log("Insertion complete");
-      
-      // Format time in both formats
+
       const humanReadableTime = formatDuration(totalDuration);
       const timeHHMMSS = formatDurationHHMMSS(totalDuration);
-      
+
+      const options = { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true };
+      const formattedStart = userStartTime.toLocaleTimeString(undefined, options);
+      const formattedEnd = userEndTime.toLocaleTimeString(undefined, options);
+
       updateStatus(`Insertion finished in ${humanReadableTime}`, false);
-      
-      // Update total time display with HH:MM:SS format
+
       if (elements.totalTime) {
-        elements.totalTime.textContent = `Total time: ${timeHHMMSS} (${humanReadableTime})`;
+        elements.totalTime.textContent = `Start time: ${formattedStart} | End time: ${formattedEnd} | Duration: ${timeHHMMSS} (${humanReadableTime})`;
       }
-      
-      // Show time stats container if it exists
+
       if (elements.timeStats) {
         elements.timeStats.style.display = "block";
       }
-      
+
       log(`Total insertion time: ${timeHHMMSS} (${humanReadableTime})`);
       log(`Performance: ${(TOTAL_ENTRIES / (totalDuration / 1000)).toFixed(0)} entries/sec average`);
-      
+
       setInsertState("done");
       isInserting = false;
       if (worker) {
         worker.terminate();
         worker = null;
       }
-      
-      // Confetti celebration
+
       if (typeof window.confetti === "function") {
         window.confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
       }
-      
+
       if (elements.deleteBtn) elements.deleteBtn.disabled = false;
     }
   };
@@ -496,7 +489,6 @@ async function startInsertion() {
   };
 }
 
-// Cancel insertion process
 async function cancelInsertion() {
   if (!isInserting) return;
   if (elements.cancelBtn) elements.cancelBtn.disabled = true;
@@ -539,72 +531,60 @@ async function cancelInsertion() {
   }
 }
 
-// Cache the goTop button element (make sure this matches your HTML id)
-const goTopBtn = document.getElementById('goTop');
+const goTopBtn = document.getElementById("goTop");
 
 function setupScrollToTopButton() {
   if (!goTopBtn) return;
 
-  // Initially hide the button
-  goTopBtn.style.display = 'none';
+  goTopBtn.style.display = "none";
 
-  // Show/hide button on scroll
-  window.addEventListener('scroll', () => {
-    if (window.pageYOffset > 200) {
-      goTopBtn.style.display = 'block';
-    } else {
-      goTopBtn.style.display = 'none';
-    }
+  window.addEventListener("scroll", () => {
+    goTopBtn.style.display = window.pageYOffset > 200 ? "block" : "none";
   });
 
-  // Scroll to top smoothly on click
-  goTopBtn.addEventListener('click', () => {
+  goTopBtn.addEventListener("click", () => {
     window.scrollTo({
       top: 0,
-      behavior: 'smooth',
+      behavior: "smooth",
     });
 
-    // Update live region for screen readers if present
     const liveRegion = document.querySelector('[aria-live="polite"]');
     if (liveRegion) {
-      liveRegion.textContent = 'Scrolled to top';
+      liveRegion.textContent = "Scrolled to top";
     }
   });
 
-  // Keyboard accessibility (trigger click on Enter or Space)
-  goTopBtn.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
+  goTopBtn.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       goTopBtn.click();
     }
   });
 }
 
-// Call this function after your DOM is loaded
-window.addEventListener('DOMContentLoaded', setupScrollToTopButton);
+window.addEventListener("DOMContentLoaded", setupScrollToTopButton);
 
 function clearUI() {
-  if (elements.logDiv) elements.logDiv.innerHTML = '<div>Ready to start...</div>';
-  if (elements.dataContainer) elements.dataContainer.innerHTML = '';
+  if (elements.logDiv) elements.logDiv.innerHTML = "<div>Ready to start...</div>";
+  if (elements.dataContainer) elements.dataContainer.innerHTML = "";
   showPaging(false);
   showData(false);
   batchInserted = 0;
   currentPage = 0;
   totalPages = 0;
   milestoneShown = false;
-  if (elements.pageInfo) elements.pageInfo.textContent = 'Page 0 / 0';
+  if (elements.pageInfo) elements.pageInfo.textContent = "Page 0 / 0";
   updateStatus("Ready");
   enablePagination(false);
-  if (elements.milestoneDiv) elements.milestoneDiv.style.display = 'none';
-  if (elements.timeStats) elements.timeStats.style.display = 'none';
+  if (elements.milestoneDiv) elements.milestoneDiv.style.display = "none";
+  if (elements.timeStats) elements.timeStats.style.display = "none";
   if (elements.progressBar) {
     elements.progressBar.value = 0;
-    elements.progressBar.style.display = 'none';
+    elements.progressBar.style.display = "none";
   }
-  if (elements.totalTime) elements.totalTime.textContent = '';
+  if (elements.totalTime) elements.totalTime.textContent = "";
 }
 
-// Setup scroll to top button
 function scrollToTop() {
   window.scrollTo({ top: 0, behavior: "smooth" });
   const liveRegion = document.querySelector("[aria-live='polite']");
@@ -620,13 +600,12 @@ function setupScrollListener() {
   elements.goTop.onclick = scrollToTop;
 }
 
-// Initialization
 window.onload = () => {
   Object.assign(elements, {
     startBtn: $("startBtn"),
     cancelBtn: $("cancelBtn"),
     deleteBtn: $("deleteBtn"),
-    exportBtn: $("exportBtn"),
+    // exportBtn is removed
     status: $("status"),
     totalTime: $("totalTime"),
     timeStats: $("timeStats"),
@@ -673,9 +652,7 @@ window.onload = () => {
   if (elements.deleteBtn) elements.deleteBtn.onclick = () => {
     if (!elements.deleteBtn.disabled) deleteDatabase();
   };
-  if (elements.exportBtn) elements.exportBtn.onclick = () => {
-    if (!elements.exportBtn.disabled) exportData();
-  };
+  // Export button binding is removed
 
   // Initial UI
   setInsertState("ready");
@@ -683,9 +660,28 @@ window.onload = () => {
   showPaging(false);
   showData(false);
   updateStatus("Ready. Click 'Start' to begin.");
+
+  // --- SERVICE WORKER REGISTRATION ---
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.getRegistration().then((registration) => {
+      if (registration) {
+        console.log("Service worker is already registered:", registration);
+      } else {
+        navigator.serviceWorker
+          .register("/sw.js", { scope: "/" })
+          .then((reg) => {
+            console.log("Service worker registration succeeded:", reg);
+          })
+          .catch((error) => {
+            console.error("Service worker registration failed:", error);
+          });
+      }
+    });
+  } else {
+    console.error("Service workers are not supported in this browser.");
+  }
 };
 
-// Global error handlers
 window.addEventListener("error", (e) => {
   console.error("Global error:", e.error || e.message);
   updateStatus("An unexpected error occurred. Please reload.");

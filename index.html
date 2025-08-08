@@ -4,11 +4,22 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Sri Rama Koti</title>
-  <!-- Manifest for PWA -->
+
+  <!-- PWA Manifest -->
   <link rel="manifest" href="manifest.json" />
+
+  <!-- Theme color for mobile browsers -->
+  <meta name="theme-color" content="#b55b2a" />
+
+  <!-- Favicon and Icons -->
+  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <!-- Your styles.css containing the provided CSS -->
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <img src="icon-512.png" alt="Sri Rama Koti Logo" id="heroIcon"  class="HEADER_LOGO" />
 
   <!-- Navigation Menu -->
   <nav id="menuBar" aria-label="Main navigation" role="navigation">
@@ -88,7 +99,7 @@
       <button id="startBtn" title="Insert 1 crore entries">Start Insertion</button>
       <button id="cancelBtn" title="Cancel insertion" style="display:none;">Cancel</button>
       <button id="deleteBtn" title="Delete database" disabled>Delete Database</button>
-      <!-- <button id="exportBtn" title="Export data" disabled>Export Data</button> -->
+      <!-- Export button removed -->
     </div>
 
     <progress id="progressBar" max="100" value="0" aria-label="Insertion progress" style="display:none; width:100%; margin-top:1rem;"></progress>
