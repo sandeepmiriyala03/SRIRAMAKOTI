@@ -175,20 +175,29 @@
 </section>
 
 
-<section id="aiPage" role="region">
+<section id="aiPage" role="region" aria-label="Rama Koti Devotional AI Assistant">
   <details open>
-    <summary>Ask the Devotional AI Assistant</summary>
-    <p>Ask me about Rama Koti, Ramayana, or receive devotional guidance and motivation.</p>
-    <textarea id="aiQuery" rows="3" style="width:100%;" placeholder="Type your question..."></textarea><br><br>
-
-    <button id="askAIButton">Ask AI</button>
-    <button id="clearAIButton" type="button" style="margin-left: 10px;">Clear</button>
-
-    <div id="aiResponse" style="display:none;">
+    <summary style="font-weight: bold; font-size: 1.1em; cursor: pointer;">
+      Ask the Devotional AI Assistant
+    </summary>
+    <p>
+      Welcome to the Rama Koti AI Assistant. Ask your questions about Lord Rama, the Ramayana, or seek devotional guidance and spiritual motivation.  
+      Receive clear and reverent answers that will deepen your connection with the timeless teachings of dharma and devotion.
+    </p>
+    <textarea id="aiQuery" rows="4" style="width:100%;" placeholder="Type your devotional question here..." aria-label="Enter your question about Rama Koti or Ramayana"></textarea>
+    <br><br>
+    <button id="askAIButton" type="button" aria-live="polite" aria-disabled="false" style="padding: 8px 16px; font-size: 1em;">
+      Ask AI
+    </button>
+    <button id="clearAIButton" type="button" style="margin-left: 10px; padding: 8px 16px; font-size: 1em;">
+      Clear
+    </button>
+    <div id="aiResponse" role="region" aria-live="polite" aria-atomic="true" style="margin-top: 20px; display: none; white-space: pre-line; font-family: serif; font-size: 1rem; color: #3a3a3a;">
       AI response will appear here...
     </div>
   </details>
 </section>
+
 
   <!-- Live Status Region for Screen Readers -->
   <div
