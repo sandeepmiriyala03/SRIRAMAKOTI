@@ -1,6 +1,6 @@
 // ===================================================================
 // MAIN.JS - Sri Rama Koti PWA
-// Author: Sandeep Mirala
+// Author: Sandeep Mirala (refactored/fixed version)
 // Repository: https://github.com/sandeepmirala/SRIRAMAKI
 // ===================================================================
 
@@ -23,14 +23,14 @@ let cancelRequested = false;
 let lastPhrase = "";
 let milestoneShown = false;
 
-let userStartTime = null;  // User system start time
-let userEndTime = null;    // User system end time
+let userStartTime = null;
+let userEndTime = null;
 
 // DOM cache helper
 const elements = {};
 const $ = (id) => document.getElementById(id);
 
-// Utility functions
+// ===================== Utility Functions ===========================
 function formatNumberIndian(num) {
   if (num < 100_000) return num.toLocaleString();
   if (num < 10_000_000) return (num / 100_000).toFixed(0) + " Lakh";
@@ -40,7 +40,7 @@ function formatNumberIndian(num) {
 function formatDuration(ms) {
   const secs = Math.floor(ms / 1000);
   const h = Math.floor(secs / 3600);
-  let rem = secs % 3600;
+  const rem = secs % 3600;
   const m = Math.floor(rem / 60);
   const s = rem % 60;
   const parts = [];
@@ -100,6 +100,7 @@ function updatePagination() {
   const hasData = batchInserted > 0 && totalPages > 0;
   showPaging(hasData);
   showData(hasData);
+
   if (!hasData) {
     [firstPageBtn, prevPageBtn, nextPageBtn, lastPageBtn].forEach((btn) => (btn.disabled = true));
     pageInfo.textContent = "Page 0 / 0";
@@ -116,6 +117,8 @@ function updatePagination() {
   pageInfo.textContent = `Page ${currentPage + 1} / ${totalPages}`;
   enablePagination(canPaginate);
 }
+
+// ===================== IndexedDB Operations ========================
 
 async function openDB() {
   return new Promise((resolve, reject) => {
@@ -152,7 +155,6 @@ async function openDB() {
 
 async function deleteDatabase(confirmDelete = true) {
   if (confirmDelete && !confirm("Delete all data? This is irreversible.")) return false;
-
   if (elements.deleteBtn) elements.deleteBtn.disabled = true;
   updateStatus("Deleting database...");
   log("Deletion started.");
@@ -168,7 +170,7 @@ async function deleteDatabase(confirmDelete = true) {
       db.close();
       db = null;
     }
-    let req = indexedDB.deleteDatabase(DB_NAME);
+    const req = indexedDB.deleteDatabase(DB_NAME);
     req.onerror = () => {
       updateStatus("Failed to delete database.");
       if (elements.deleteBtn) elements.deleteBtn.disabled = false;
@@ -181,9 +183,7 @@ async function deleteDatabase(confirmDelete = true) {
       updateStatus("Database deleted.");
       log("Database deletion success.");
       clearUI();
-      setTimeout(() => {
-        setInsertState("ready");
-      }, 100);
+      setTimeout(() => setInsertState("ready"), 100);
     };
     if ("caches" in window) {
       caches.keys().then((keys) => Promise.all(keys.map((k) => caches.delete(k))));
@@ -196,6 +196,8 @@ async function deleteDatabase(confirmDelete = true) {
     return false;
   }
 }
+
+// ======================= Data Paging & UI ===========================
 
 function loadPage(page) {
   if (!db || batchInserted < TOTAL_ENTRIES) {
@@ -211,26 +213,29 @@ function loadPage(page) {
   currentPage = page;
   showPaging(true);
   showData(true);
-  elements.dataContainer.innerHTML = "<p>Loading...</p>";
+  if (elements.dataContainer) elements.dataContainer.innerHTML = "<p>Loading...</p>";
   updateStatus(`Loading page ${page + 1}...`);
 
   try {
     const txn = db.transaction(STORE_NAME, "readonly");
     const store = txn.objectStore(STORE_NAME);
-    const range = IDBKeyRange.bound(page * PAGE_SIZE + 1, Math.min(batchInserted, (page + 1) * PAGE_SIZE));
+    const startKey = page * PAGE_SIZE + 1;
+    const endKey = Math.min(batchInserted, (page + 1) * PAGE_SIZE);
+    const range = IDBKeyRange.bound(startKey, endKey, false, false);
     const req = store.openCursor(range);
     let count = 0;
     const frag = document.createDocumentFragment();
 
     req.onerror = () => {
       updateStatus("Failed to load page data.");
-      elements.dataContainer.innerHTML = "<p style='color:red;'>Error loading data.</p>";
+      if (elements.dataContainer)
+        elements.dataContainer.innerHTML = "<p style='color:red;'>Error loading data.</p>";
     };
 
     req.onsuccess = (evt) => {
       let cursor = evt.target.result;
       if (cursor) {
-        let div = document.createElement("div");
+        const div = document.createElement("div");
         div.className = "ramadiv";
         div.textContent = `${cursor.value.text} (ID: ${cursor.value.id.toLocaleString()})`;
         frag.appendChild(div);
@@ -238,9 +243,9 @@ function loadPage(page) {
         cursor.continue();
       } else {
         if (count === 0) {
-          elements.dataContainer.textContent = "No records on this page";
+          if (elements.dataContainer) elements.dataContainer.textContent = "No records on this page";
           updateStatus("No data found on page.");
-        } else {
+        } else if (elements.dataContainer) {
           elements.dataContainer.innerHTML = "";
           elements.dataContainer.appendChild(frag);
           updateStatus(`Showing ${count} records on page ${page + 1}`);
@@ -260,6 +265,7 @@ function goFirst() {
     updatePagination();
   }
 }
+
 function goPrev() {
   if (currentPage > 0) {
     loadPage(currentPage - 1);
@@ -267,6 +273,7 @@ function goPrev() {
     updatePagination();
   }
 }
+
 function goNext() {
   if (currentPage < totalPages - 1) {
     loadPage(currentPage + 1);
@@ -274,6 +281,7 @@ function goNext() {
     updatePagination();
   }
 }
+
 function goLast() {
   if (currentPage < totalPages - 1) {
     loadPage(totalPages - 1);
@@ -282,21 +290,25 @@ function goLast() {
   }
 }
 
-function showSection(section) {
+// ===================== Section & Navigation ========================
+
+function toggleSection(section) {
   ["about", "insert", "tools"].forEach((key) => {
     if (elements[key + "Page"]) {
       elements[key + "Page"].style.display = key === section ? "block" : "none";
     }
   });
   ["About", "Insert", "Tools"].forEach((label) => {
-    let btn = elements["menu" + label];
+    const btn = elements["menu" + label];
     if (btn) btn.disabled = label.toLowerCase() === section;
   });
 }
 
+// ====================== Input Validation ===========================
+
 function validateInput() {
   if (!elements.insertText) return false;
-  let val = elements.insertText.value.trim();
+  const val = elements.insertText.value.trim();
   if (val.length < 4) {
     updateStatus("Please enter at least 4 characters in phrase.");
     elements.insertText.focus();
@@ -304,6 +316,8 @@ function validateInput() {
   }
   return true;
 }
+
+// ====================== Insert State UI ============================
 
 function setInsertState(state) {
   const { startBtn, cancelBtn, progressBar, deleteBtn } = elements;
@@ -339,6 +353,8 @@ function setInsertState(state) {
   }
 }
 
+// ====================== Start Insertion =============================
+
 async function startInsertion() {
   if (isInserting) return;
   if (!validateInput()) return;
@@ -351,7 +367,9 @@ async function startInsertion() {
       return;
     }
   }
-  let phrase = elements.insertText.value.trim();
+
+  const phrase = elements.insertText.value.trim();
+
   if (phrase !== lastPhrase && lastPhrase !== "") {
     await deleteDatabase(true);
     try {
@@ -374,8 +392,7 @@ async function startInsertion() {
   milestoneShown = false;
 
   userStartTime = new Date();
-
-  let startTime = performance.now();
+  const startTime = performance.now();
 
   worker = new Worker("SriramaInsert.js", { type: "module" });
   worker.postMessage({ DB_NAME, STORE_NAME, DB_VERSION, TOTAL_ENTRIES, BATCH_SIZE, phrase });
@@ -409,9 +426,9 @@ async function startInsertion() {
         log("🎉 MILESTONE: 1 Crore (10,000,000) entries inserted successfully!");
       }
 
-      let elapsed = (performance.now() - startTime) / 1000;
-      let speed = batchInserted / elapsed;
-      let eta = speed ? (TOTAL_ENTRIES - batchInserted) / speed : 0;
+      const elapsed = (performance.now() - startTime) / 1000;
+      const speed = batchInserted / elapsed;
+      const eta = speed ? (TOTAL_ENTRIES - batchInserted) / speed : 0;
 
       if (batchInserted % (BATCH_SIZE * 5) === 0 || batchInserted === TOTAL_ENTRIES) {
         log(
@@ -439,7 +456,7 @@ async function startInsertion() {
     if (e.data.done) {
       userEndTime = new Date();
 
-      let totalDuration = performance.now() - startTime;
+      const totalDuration = performance.now() - startTime;
       log("Insertion complete");
 
       const humanReadableTime = formatDuration(totalDuration);
@@ -489,6 +506,8 @@ async function startInsertion() {
   };
 }
 
+// ======================= Cancel Insertion ==========================
+
 async function cancelInsertion() {
   if (!isInserting) return;
   if (elements.cancelBtn) elements.cancelBtn.disabled = true;
@@ -496,8 +515,9 @@ async function cancelInsertion() {
   cancelRequested = true;
 
   if (worker) {
-    worker.terminate();
-    worker = null;
+    const oldWorker = worker;
+    worker = null; // Nullify early to avoid race with onmessage
+    oldWorker.terminate();
   }
 
   updateStatus("Cancelling...");
@@ -508,7 +528,7 @@ async function cancelInsertion() {
       db.close();
       db = null;
     }
-    let req = indexedDB.deleteDatabase(DB_NAME);
+    const req = indexedDB.deleteDatabase(DB_NAME);
     req.onsuccess = () => {
       updateStatus("Cancelled and cleared database.");
       clearUI();
@@ -531,6 +551,8 @@ async function cancelInsertion() {
   }
 }
 
+// ======================= Scroll To Top Button =======================
+
 const goTopBtn = document.getElementById("goTop");
 
 function setupScrollToTopButton() {
@@ -543,10 +565,7 @@ function setupScrollToTopButton() {
   });
 
   goTopBtn.addEventListener("click", () => {
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
 
     const liveRegion = document.querySelector('[aria-live="polite"]');
     if (liveRegion) {
@@ -563,6 +582,8 @@ function setupScrollToTopButton() {
 }
 
 window.addEventListener("DOMContentLoaded", setupScrollToTopButton);
+
+// ======================= UI Reset ==========================
 
 function clearUI() {
   if (elements.logDiv) elements.logDiv.innerHTML = "<div>Ready to start...</div>";
@@ -585,27 +606,13 @@ function clearUI() {
   if (elements.totalTime) elements.totalTime.textContent = "";
 }
 
-function scrollToTop() {
-  window.scrollTo({ top: 0, behavior: "smooth" });
-  const liveRegion = document.querySelector("[aria-live='polite']");
-  if (liveRegion) liveRegion.textContent = "Scrolled to top";
-}
-
-function setupScrollListener() {
-  if (!elements.goTop) return;
-  elements.goTop.style.display = "none";
-  window.addEventListener("scroll", () => {
-    elements.goTop.style.display = window.pageYOffset > 200 ? "block" : "none";
-  });
-  elements.goTop.onclick = scrollToTop;
-}
+// ================== Window Load and Initialization ===============
 
 window.onload = () => {
   Object.assign(elements, {
     startBtn: $("startBtn"),
     cancelBtn: $("cancelBtn"),
     deleteBtn: $("deleteBtn"),
-    // exportBtn is removed
     status: $("status"),
     totalTime: $("totalTime"),
     timeStats: $("timeStats"),
@@ -634,17 +641,17 @@ window.onload = () => {
   });
 
   // Navigation bindings
-  if (elements.menuAbout) elements.menuAbout.onclick = () => showSection("about");
-  if (elements.menuInsert) elements.menuInsert.onclick = () => showSection("insert");
-  if (elements.menuTools) elements.menuTools.onclick = () => showSection("tools");
+  if (elements.menuAbout) elements.menuAbout.onclick = () => toggleSection("about");
+  if (elements.menuInsert) elements.menuInsert.onclick = () => toggleSection("insert");
+  if (elements.menuTools) elements.menuTools.onclick = () => toggleSection("tools");
 
-  // Pagination handlers
+  // Pagination button handlers
   if (elements.firstPageBtn) elements.firstPageBtn.onclick = goFirst;
   if (elements.prevPageBtn) elements.prevPageBtn.onclick = goPrev;
   if (elements.nextPageBtn) elements.nextPageBtn.onclick = goNext;
   if (elements.lastPageBtn) elements.lastPageBtn.onclick = goLast;
 
-  setupScrollListener();
+  setupScrollToTopButton();
 
   // Control buttons
   if (elements.startBtn) elements.startBtn.onclick = startInsertion;
@@ -652,16 +659,15 @@ window.onload = () => {
   if (elements.deleteBtn) elements.deleteBtn.onclick = () => {
     if (!elements.deleteBtn.disabled) deleteDatabase();
   };
-  // Export button binding is removed
 
-  // Initial UI
+  // Initial UI setup
   setInsertState("ready");
   enablePagination(false);
   showPaging(false);
   showData(false);
   updateStatus("Ready. Click 'Start' to begin.");
 
-  // --- SERVICE WORKER REGISTRATION ---
+  // Service Worker registration
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.getRegistration().then((registration) => {
       if (registration) {
@@ -669,8 +675,8 @@ window.onload = () => {
       } else {
         navigator.serviceWorker
           .register("/sw.js", { scope: "/" })
-          .then((reg) => {
-            console.log("Service worker registration succeeded:", reg);
+          .then((registration) => {
+            console.log("Service worker registration succeeded:", registration);
           })
           .catch((error) => {
             console.error("Service worker registration failed:", error);
@@ -682,11 +688,5 @@ window.onload = () => {
   }
 };
 
-window.addEventListener("error", (e) => {
-  console.error("Global error:", e.error || e.message);
-  updateStatus("An unexpected error occurred. Please reload.");
-});
-window.addEventListener("unhandledrejection", (e) => {
-  console.error("Unhandled rejection:", e.reason || e.message);
-  updateStatus("An unexpected error occurred. Please reload.");
-});
+// =============== Global Error Handlers ===========================
+

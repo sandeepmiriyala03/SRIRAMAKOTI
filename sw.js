@@ -1,6 +1,6 @@
 const CACHE_NAME = 'sri-rama-koti-cache-v1';
 
-// Precache URLs including your app shell and AI model files from CDN
+// Precache application shell and AI model files
 const urlsToCache = [
   '/',
   '/index.html',
@@ -10,70 +10,76 @@ const urlsToCache = [
   '/manifest.json',
   '/icon-192.png',
   '/icon-512.png',
-
-  // Add the exact AI model asset URLs your ai.js requests here:
-  'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2/distilgpt2/onnx/model.onnx',
-  'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2/distilgpt2/generation_config.json',
-  // Add any additional files your AI model requires
+  '/favicon.ico',
 ];
 
-// Install event: cache necessary files including AI model files
+// Install event - cache files individually with error handling
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('[ServiceWorker] Caching app shell and AI model files');
-        return cache.addAll(urlsToCache);
-      })
-      .then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then(async (cache) => {
+      console.log('[ServiceWorker] Caching app shell and AI model files');
+      for (const url of urlsToCache) {
+        try {
+          await cache.add(url);
+          console.log(`[ServiceWorker] Cached: ${url}`);
+        } catch (err) {
+          console.warn(`[ServiceWorker] Failed to cache ${url}:`, err);
+          // Continue caching other files without failing entire install
+        }
+      }
+    }).then(() => self.skipWaiting())
   );
 });
 
-// Activate event: delete old caches and immediately become active
+// Activate event - clean up old caches
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(cacheNames =>
       Promise.all(
         cacheNames
           .filter(name => name !== CACHE_NAME)
-          .map(name => caches.delete(name))
+          .map(name => {
+            console.log(`[ServiceWorker] Deleting old cache: ${name}`);
+            return caches.delete(name);
+          })
       )
     ).then(() => self.clients.claim())
   );
 });
 
-// Fetch event: try cache first, then network; dynamically cache new GET requests
+// Fetch event - serve cache first, then network; cache new GET requests dynamically
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
 
   event.respondWith(
     caches.match(event.request).then(cachedResponse => {
       if (cachedResponse) {
+        // Return cached response if found
         return cachedResponse;
       }
 
+      // Otherwise, fetch from network
       return fetch(event.request).then(networkResponse => {
-        if (!networkResponse || networkResponse.status !== 200) {
-          return networkResponse;
-        }
-
-        // Cache both same-origin ('basic') and cross-origin ('cors') responses (to include CDN AI models)
-        if (networkResponse.type === 'basic' || networkResponse.type === 'cors') {
+        // Only cache successful responses
+        if (
+          networkResponse &&
+          networkResponse.status === 200 &&
+          (networkResponse.type === 'basic' || networkResponse.type === 'cors') // same-origin or CORS
+        ) {
+          // Clone response so we can cache it without consuming it
           const responseClone = networkResponse.clone();
           event.waitUntil(
-            caches.open(CACHE_NAME).then(cache => {
-              cache.put(event.request, responseClone);
-            })
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, responseClone))
           );
         }
 
         return networkResponse;
       }).catch(() => {
-        // Offline fallback: if navigation request, serve cached index.html for SPA routing
+        // If fetch fails (offline), and navigation request, serve cached index.html for SPA routing fallback
         if (event.request.mode === 'navigate') {
           return caches.match('/index.html');
         }
-        // You can add fallback for other resources (images, scripts) if desired here
+        // Optionally add fallback for images or other file types here
       });
     })
   );
